@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&amp;family=Quicksand:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+             "colors": {
+                      "secondary-fixed": "#e5deff",
+                      "surface-container": "#e5eeff",
+                      "surface-bright": "#f8f9ff",
+                      "inverse-primary": "#b8c4ff",
+                      "on-tertiary-fixed-variant": "#3f484d",
+                      "on-tertiary-fixed": "#141d21",
+                      "surface": "#f8f9ff",
+                      "primary-container": "#a5b4fc",
+                      "on-surface": "#0b1c30",
+                      "background": "#f8f9ff",
+                      "primary": "#4b5a9c",
+                      "outline": "#767681",
+                      "secondary-fixed-dim": "#c8c2e9",
+                      "secondary": "#5f5a7c",
+                      "tertiary-fixed": "#dbe4ea",
+                      "primary-fixed-dim": "#b8c4ff",
+                      "on-secondary-fixed-variant": "#474363",
+                      "on-secondary-container": "#605b7d",
+                      "tertiary-fixed-dim": "#bfc8ce",
+                      "on-primary": "#ffffff",
+                      "outline-variant": "#c6c5d2",
+                      "error": "#ba1a1a",
+                      "on-surface-variant": "#454650",
+                      "inverse-on-surface": "#eaf1ff",
+                      "on-tertiary-container": "#414a4f",
+                      "on-secondary-fixed": "#1b1735",
+                      "surface-container-highest": "#d3e4fe",
+                      "on-primary-fixed-variant": "#334282",
+                      "on-primary-fixed": "#001354",
+                      "on-primary-container": "#354484",
+                      "tertiary": "#576065",
+                      "primary-fixed": "#dde1ff",
+                      "error-container": "#ffdad6",
+                      "on-error-container": "#93000a",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-dim": "#cbdbf5",
+                      "surface-container-high": "#dce9ff",
+                      "inverse-surface": "#213145",
+                      "on-background": "#0b1c30",
+                      "surface-variant": "#d3e4fe",
+                      "surface-tint": "#4b5a9c",
+                      "tertiary-container": "#b0b9bf",
+                      "secondary-container": "#dcd5fd",
+                      "on-secondary": "#ffffff",
+                      "surface-container-low": "#eff4ff",
+                      "on-tertiary": "#ffffff",
+                      "on-error": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.5rem",
+                      "lg": "1rem",
+                      "xl": "1.5rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xs": "4px",
+                      "lg": "24px",
+                      "unit": "4px",
+                      "sm": "8px",
+                      "xl": "48px",
+                      "container-max": "1200px",
+                      "md": "16px",
+                      "gutter": "24px"
+              },
+              "fontFamily": {
+                 "display-lg": ["Fredoka", "sans-serif"],    // Solo para el logo o títulos gigantes
+    "headline-md": ["Quicksand", "sans-serif"], // <-- CAMBIA ESTO A QUICKSAND
+    "body-md": ["Quicksand", "sans-serif"],
+    "label-sm": ["Quicksand", "sans-serif"]
+              },
+              "fontSize": {
+                      "display-lg": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                      "headline-md": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                      "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "500"}],
+                      "label-sm": ["13px", {"lineHeight": "1.2", "letterSpacing": "0.02em", "fontWeight": "600"}]   
+                    }   
+                },
+            },
+        }
+    </script>
+<style> body {
+            font-family: 'Quicksand', sans-serif;
+        }
+        h1, h2, h3, .brand-font {
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .mood-btn:hover {
+            transform: scale(1.1);
+        }   
+    </style>
+<style>.glass-card {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            box-shadow: 0 8px 32px rgba(165, 180, 252, 0.05);
+        }
+        .cloud-bg {
+            background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAhSpUq2UNu1rV0IIMQkgLvmE6DtJFSIPgToBBFDwW4dvmcYOTMSx70_br_e4De9imumlhifHKdSWhSosXQP7NOUazrAA6isi2umhm1aVECioTqcObkSr62fUI4A1beZDE6BfR1FS7c5j2pX1649iGitXtcMTRfh9ABMpqSbCUtGG6PuZu3DZcg4aRgtt9395sLdX6AS8KQHHzbM4uvbWCGbinZb8bMk-AgB7kfNg6xw-eQQIU580GvZooX4ZAjpv_RtYA9u0UtYHHH');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+        }</style></head>
+<body class="bg-surface font-body-md text-on-surface min-h-screen flex flex-col selection:bg-primary-container selection:text-on-primary-container">
+<nav class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-inverse-surface/80 backdrop-blur-xl border-b border-outline-variant/20 shadow-sm">
+<div class="flex justify-between items-center px-gutter py-md mx-auto h-16 max-w-6xl"><!-- Brand -->
+<div class="flex items-center gap-sm flex-1">
+<span class="brand-font text-headline-md font-bold text-primary dark:text-inverse-primary tracking-tight">Reten IA</span>
+</div>
+<!-- Navigation Links - Centered -->
+<div class="hidden md:flex items-center gap-lg justify-center">
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-inverse-primary transition-colors font-label-sm text-label-sm hover:bg-primary-container/20 rounded-lg px-sm py-xs" href="#">Inicio</a>
+<a class="text-primary dark:text-inverse-primary font-bold border-b-2 border-primary dark:border-inverse-primary pb-1 font-label-sm text-label-sm" href="#">Alertas</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-inverse-primary transition-colors font-label-sm text-label-sm hover:bg-primary-container/20 rounded-lg px-sm py-xs" href="#">Notas</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-inverse-primary transition-colors font-label-sm text-label-sm hover:bg-primary-container/20 rounded-lg px-sm py-xs" href="#">Asistencia</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-inverse-primary transition-colors font-label-sm text-label-sm hover:bg-primary-container/20 rounded-lg px-sm py-xs" href="#">Apoyo</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-inverse-primary transition-colors font-label-sm text-label-sm hover:bg-primary-container/20 rounded-lg px-sm py-xs" href="#">Perfil</a>
+</div>
+<!-- Trailing Actions - Grouped -->
+<div class="flex items-center justify-end gap-xs flex-1">
+<button class="flex items-center gap-xs px-md py-sm rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm hover:scale-105 active:scale-95 transition-all duration-200 shadow-sm">
+<span class="material-symbols-outlined text-[18px] transition-transform duration-300 group-hover:scale-110" data-icon="logout">logout</span>
+<span class="">Cerrar sesión</span>
+</button>
+<button class="p-sm rounded-full text-on-surface-variant hover:bg-surface-variant transition-all group flex items-center justify-center hover:scale-110">
+<span class="material-symbols-outlined transition-transform duration-500 group-hover:rotate-90">settings</span>
+</button>
+</div></div>
+</nav>
+
+
+<main class="pt-[100px] pb-xl px-gutter max-w-container-max mx-auto">
+<div class="flex flex-col md:flex-row justify-between items-end mb-xl gap-md">
+<div>
+<h1 class="text-display-lg font-bold text-primary mb-sm leading-none">Tus Alertas</h1>
+<p class="text-secondary">Mantente al tanto de tu progreso académico y avisos del sistema.</p>
+</div>
+<div class="flex gap-sm flex-wrap">
+<button class="px-md py-xs rounded-full bg-primary text-on-primary text-label-sm shadow-lg shadow-primary/20">Todas</button>
+<button class="px-md py-xs rounded-full glass-card hover:bg-white/80 transition-colors text-on-surface-variant text-label-sm">Urgentes</button>
+<button class="px-md py-xs rounded-full glass-card hover:bg-white/80 transition-colors text-on-surface-variant text-label-sm">Académicas</button>
+<button class="px-md py-xs rounded-full glass-card hover:bg-white/80 transition-colors text-on-surface-variant text-label-sm">Sistema</button>
+</div>
+</div>
+<div class="grid grid-cols-1 gap-lg items-start lg:grid-cols-5">
+<div class="space-y-lg lg:col-span-3">
+<!-- Alerta de Inasistencia Consecutiva -->
+<div class="glass-card rounded-xl p-lg flex gap-lg items-start relative overflow-hidden border-l-4 border-l-error">
+<div class="p-md rounded-xl bg-error-container/50 text-error">
+<span class="material-symbols-outlined text-[32px]" data-icon="event_busy" data-weight="fill" style='font-variation-settings: "FILL" 1;'>event_busy</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-xs">
+<h3 class="font-headline-md text-headline-md text-on-surface">Alerta de Inasistencia Consecutiva</h3>
+<span class="px-sm py-xs rounded-full bg-error-container text-error text-[10px]">URGENTE</span>
+</div>
+<p class="text-on-surface-variant mb-md">Has registrado <span class="font-bold">3 inasistencias consecutivas</span>. Esto está impactando negativamente tu puntaje de asistencia y participación.</p>
+<div class="flex gap-sm">
+<button class="px-md py-sm rounded-lg bg-primary text-on-primary text-label-sm hover:translate-y-[-2px] transition-all duration-300 shadow-lg shadow-primary/30">Justificar falta</button>
+<button class="px-md py-sm rounded-lg border border-outline-variant text-on-surface-variant text-label-sm hover:bg-white/50 transition-colors">Ignorar</button>
+</div>
+</div>
+</div>
+<!-- Alerta de Rendimiento Académico -->
+<div class="glass-card rounded-xl p-lg flex gap-lg items-start">
+<div class="p-md rounded-xl bg-primary-container/30 text-primary">
+<span class="material-symbols-outlined text-[32px]" data-icon="trending_down" data-weight="fill" style='font-variation-settings: "FILL" 1;'>trending_down</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-xs">
+<h3 class="font-headline-md text-headline-md text-on-surface">Alerta de Rendimiento Académico</h3>
+<span class="text-on-surface-variant text-[10px]">Hace 3 horas</span>
+</div>
+<p class="text-on-surface-variant mb-md">Se ha detectado una <span class="font-bold">calificación baja</span> en tu examen parcial de Estructuras de Datos. Te recomendamos reforzar este tema.</p>
+<div class="flex gap-sm">
+<button class="px-md py-sm rounded-lg bg-primary text-on-primary text-label-sm hover:translate-y-[-2px] transition-all duration-300 shadow-lg shadow-primary/30">Ver examen</button>
+</div>
+</div>
+</div>
+<!-- Alerta de Desconexión -->
+<div class="glass-card rounded-xl p-lg flex gap-lg items-start">
+<div class="p-md rounded-xl bg-tertiary-fixed text-tertiary">
+<span class="material-symbols-outlined text-[32px]" data-icon="timer_off">timer_off</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-xs">
+<h3 class="font-headline-md text-headline-md text-on-surface">Alerta de Desconexión</h3>
+<span class="text-on-surface-variant text-[10px]">Sistema</span>
+</div>
+<p class="text-on-surface-variant mb-md">No has iniciado sesión en las últimas <span class="font-bold">48 horas</span>. Recomendamos realizar una revisión rápida del material nuevo para no perder el ritmo.</p>
+<div class="flex gap-sm">
+<button class="px-md py-sm rounded-lg border border-outline-variant text-on-surface-variant text-label-sm hover:bg-white/50 transition-colors">Entendido</button>
+</div>
+</div>
+</div>
+<!-- Opciones Sugeridas -->
+<div class="pt-md">
+<h2 class="text-headline-md font-bold text-on-surface mb-md">Opciones Sugeridas</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-md">
+<button class="glass-card p-lg rounded-xl hover:translate-y-[-4px] transition-all duration-300 text-left group">
+<span class="material-symbols-outlined text-primary mb-sm block" data-icon="menu_book">menu_book</span>
+<span class="font-bold block text-on-surface group-hover:text-primary transition-colors">Revisar material de apoyo</span>
+</button>
+<button class="glass-card p-lg rounded-xl hover:translate-y-[-4px] transition-all duration-300 text-left group">
+<span class="material-symbols-outlined text-primary mb-sm block" data-icon="calendar_month">calendar_month</span>
+<span class="font-bold block text-on-surface group-hover:text-primary transition-colors">Ver mentorías académicas</span>
+</button>
+<button class="glass-card p-lg rounded-xl hover:translate-y-[-4px] transition-all duration-300 text-left group">
+<span class="material-symbols-outlined text-primary mb-sm block" data-icon="forum">forum</span>
+<span class="font-bold block text-on-surface group-hover:text-primary transition-colors">Ver foro de dudas</span>
+</button>
+</div>
+</div>
+</div>
+<div class="space-y-lg lg:col-span-2">
+<div class="glass-card rounded-xl p-xl text-center min-h-[500px] flex flex-col justify-center">
+<h3 class="font-headline-md text-[32px] font-bold text-on-surface mb-xl">Resumen de Riesgo</h3>
+<div class="relative w-64 h-64 mx-auto mb-xl">
+<svg class="w-full h-full transform -rotate-90">
+<circle class="text-surface-container-highest/50" cx="128" cy="128" fill="transparent" r="110" stroke="currentColor" stroke-width="20"></circle>
+<circle class="text-error transition-all duration-1000" cx="128" cy="128" fill="transparent" r="110" stroke="currentColor" stroke-dasharray="691" stroke-dashoffset="172.75" stroke-linecap="round" stroke-width="20"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-[64px] font-bold text-error leading-none">75%</span>
+<span class="text-label-sm text-secondary uppercase tracking-widest mt-xs font-bold">Nivel Crítico</span>
+</div>
+</div>
+<p class="text-on-surface-variant mb-xl text-body-md max-w-sm mx-auto">Basado en tu desempeño reciente, el sistema detecta un riesgo elevado de deserción en el bloque actual.</p>
+<button class="w-full py-md rounded-xl bg-gradient-to-r from-primary to-secondary text-on-primary text-body-md hover:scale-[1.02] hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 flex items-center justify-center gap-sm font-bold">
+<span class="material-symbols-outlined" data-icon="smart_toy" data-weight="fill" style='font-variation-settings: "FILL" 1;'>smart_toy</span>
+                        Solicitar Apoyo IA
+                    </button>
+</div>
+<div class="glass-card rounded-xl p-lg">
+<h4 class="text-label-sm text-secondary uppercase tracking-widest mb-md">Próximos Pasos</h4>
+<ul class="space-y-md">
+<li class="flex items-start gap-sm">
+<span class="material-symbols-outlined text-primary text-md" data-icon="check_circle">check_circle</span>
+<span class="text-on-surface-variant">Realizar cuestionario de repaso</span>
+</li>
+<li class="flex items-start gap-sm">
+<span class="material-symbols-outlined text-primary text-md" data-icon="check_circle">check_circle</span>
+<span class="text-on-surface-variant">Completar el foro de bienvenida</span>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</main>
+<footer class="w-full py-lg mt-auto bg-surface-container-low dark:bg-inverse-surface border-t border-outline-variant/30">
+<div class="flex flex-col md:flex-row justify-between items-center px-gutter max-w-container-max mx-auto gap-md">
+<div class="flex items-center gap-sm">
+<span class="brand-font text-label-sm font-bold text-secondary">Reten IA</span>
+<span class="font-body-md text-label-sm text-on-surface-variant">© 2026. Todos los derechos reservados.</span>
+</div>
+<div class="flex gap-lg">
+<a class="text-on-surface-variant font-body-md text-label-sm hover:text-primary transition-colors" href="#">Privacidad</a>
+<a class="text-on-surface-variant font-body-md text-label-sm hover:text-primary transition-colors" href="#">Términos</a>
+<a class="text-on-surface-variant font-body-md text-label-sm hover:text-primary transition-colors" href="#">Soporte</a>
+</div>
+</div>
+</footer>
+</body></html>

@@ -1,0 +1,398 @@
+<!DOCTYPE html><html class="light" lang="es"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Reten IA - Control de Asistencia</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&amp;family=Quicksand:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                    "on-tertiary-container": "#414a4f",
+                        "outline-variant": "#c6c5d2",
+                        "inverse-primary": "#b8c4ff",
+                        "on-primary-fixed": "#001354",
+                        "error": "#ba1a1a",
+                        "surface-dim": "#cbdbf5",
+                        "surface-container-high": "#dce9ff",
+                        "surface-container-low": "#eff4ff",
+                        "secondary-fixed": "#e5deff",
+                        "on-secondary-fixed": "#1b1735",
+                        "on-primary-fixed-variant": "#334282",
+                        "surface-container-highest": "#d3e4fe",
+                        "on-tertiary-fixed": "#141d21",
+                        "tertiary": "#576065",
+                        "tertiary-fixed-dim": "#bfc8ce",
+                        "inverse-surface": "#213145",
+                        "outline": "#767681",
+                        "on-primary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "inverse-on-surface": "#eaf1ff",
+                        "surface-container": "#e5eeff",
+                        "on-error": "#ffffff",
+                        "surface-bright": "#f8f9ff",
+                        "primary-fixed": "#dde1ff",
+                        "tertiary-fixed": "#dbe4ea",
+                        "on-tertiary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "surface-container-lowest": "#ffffff",
+                        "surface": "#f8f9ff",
+                        "secondary": "#5f5a7c",
+                        "primary-fixed-dim": "#b8c4ff",
+                        "on-secondary": "#ffffff",
+                        "secondary-container": "#dcd5fd",
+                        "primary": "#4b5a9c",
+                        "on-surface": "#0b1c30",
+                        "surface-variant": "#d3e4fe",
+                        "surface-tint": "#4b5a9c",
+                        "background": "#f8f9ff",
+                        "tertiary-container": "#b0b9bf",
+                        "on-tertiary-fixed-variant": "#3f484d",
+                        "secondary-fixed-dim": "#c8c2e9",
+                        "on-secondary-container": "#605b7d",
+                        "on-secondary-fixed-variant": "#474363",
+                        "on-background": "#0b1c30",
+                        "primary-container": "#a5b4fc",
+                        "on-surface-variant": "#454650",
+                        "on-primary-container": "#354484",
+                        "emerald-custom": "#10b981",
+                        "rose-custom": "#f43f5e",
+                        "amber-custom": "#f59e0b"
+              },
+              "borderRadius": {
+                  "DEFAULT": "0.5rem",
+                      "lg": "1rem",
+                      "xl": "1.5rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xs": "4px",
+                      "lg": "24px",
+                      "unit": "4px",
+                      "sm": "8px",
+                      "xl": "48px",
+                      "container-max": "1200px",
+                      "md": "16px",
+                      "gutter": "24px"
+              },
+              "fontFamily": {
+                      "display-lg": ["Fredoka", "sans-serif"],
+                      "headline-md": ["Fredoka", "sans-serif"],
+                      "body-md": ["Quicksand", "sans-serif"],
+                      "label-sm": ["Quicksand", "sans-serif"]
+              },
+              "fontSize": {
+                      "display-lg": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                      "headline-md": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                      "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "500"}],
+                      "label-sm": ["13px", {"lineHeight": "1.2", "letterSpacing": "0.02em", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Quicksand', sans-serif;
+        }
+        h1, h2, h3, .brand-font {
+            font-family: 'Fredoka', sans-serif;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .mood-btn:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body class="bg-surface-bright text-on-surface font-body-md min-h-screen flex flex-col bg-pattern">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-inverse-surface/80 backdrop-blur-xl border-b border-outline-variant/20 shadow-sm">
+<div class="flex justify-between items-center px-gutter py-md mx-auto h-16 max-w-6xl"><!-- Brand -->
+<div class="flex items-center gap-sm flex-1">
+<span class="brand-font text-headline-md font-bold text-primary dark:text-inverse-primary tracking-tight">Reten IA</span>
+</div>
+<!-- Navigation Links - Centered -->
+<div class="hidden md:flex items-center gap-lg justify-center">
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-inverse-primary transition-colors font-label-sm text-label-sm hover:bg-primary-container/20 rounded-lg px-sm py-xs" href="#">Inicio</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-inverse-primary transition-colors font-label-sm text-label-sm hover:bg-primary-container/20 rounded-lg px-sm py-xs" href="#">Alertas</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-inverse-primary transition-colors font-label-sm text-label-sm hover:bg-primary-container/20 rounded-lg px-sm py-xs" href="#">Notas</a>
+<a class="text-primary dark:text-inverse-primary font-bold border-b-2 border-primary dark:border-inverse-primary pb-1 font-label-sm text-label-sm" href="#">Asistencias</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-inverse-primary transition-colors font-label-sm text-label-sm hover:bg-primary-container/20 rounded-lg px-sm py-xs" href="#">Apoyo</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-inverse-primary transition-colors font-label-sm text-label-sm hover:bg-primary-container/20 rounded-lg px-sm py-xs" href="#">Perfil</a>
+</div>
+<!-- Trailing Actions - Grouped -->
+<div class="flex items-center justify-end gap-xs flex-1">
+<button class="flex items-center gap-xs px-md py-sm rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm hover:scale-105 active:scale-95 transition-all duration-200 shadow-sm">
+<span class="material-symbols-outlined text-[18px] transition-transform duration-300 group-hover:scale-110" data-icon="logout">logout</span>
+<span class="">Cerrar sesión</span>
+</button>
+<button class="p-sm rounded-full text-on-surface-variant hover:bg-surface-variant transition-all group flex items-center justify-center hover:scale-110">
+<span class="material-symbols-outlined transition-transform duration-500 group-hover:rotate-90">settings</span>
+</button>
+</div></div>
+</nav>
+
+<!-- Main Content Area -->
+<main class="pt-xl mt-xl px-gutter max-w-container-max mx-auto w-full pb-xl flex-grow">
+<!-- Header Section -->
+<header class="mb-xl flex flex-col md:flex-row md:items-end md:justify-between gap-md">
+<div>
+<h1 class="font-display-lg text-display-lg text-primary mb-xs">Control de Asistencia</h1>
+<p class="font-body-md text-on-surface-variant">Ciclo Académico 2026-1&nbsp;</p>
+</div>
+<div class="flex gap-sm">
+<div class="glass-card px-md py-sm rounded-xl flex items-center space-x-md">
+<div class="text-center">
+<p class="text-label-sm text-on-surface-variant uppercase">Asistencias</p>
+<p class="text-headline-md font-bold text-emerald-custom">124</p>
+</div>
+<div class="w-[1px] h-8 bg-outline-variant/30"></div>
+<div class="text-center">
+<p class="text-label-sm text-on-surface-variant uppercase">Inasistencias</p>
+<p class="text-headline-md font-bold text-rose-custom">4</p>
+</div>
+<div class="w-[1px] h-8 bg-outline-variant/30"></div>
+<div class="text-center">
+<p class="text-label-sm text-on-surface-variant uppercase">Tardanzas</p>
+<p class="text-headline-md font-bold text-amber-custom">6</p>
+</div>
+</div>
+</div>
+</header>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-lg">
+<!-- Left Column: Calendar & Weekly Tracker -->
+<div class="lg:col-span-8 flex flex-col gap-lg">
+<!-- Calendar Card -->
+<div class="glass-card p-lg rounded-xl">
+<div class="flex justify-between items-center mb-lg">
+<h3 class="font-headline-md text-on-surface flex items-center">
+<span class="material-symbols-outlined mr-sm text-primary" data-icon="calendar_month">calendar_month</span>
+                            Registro Mensual
+                        </h3>
+<div class="flex items-center space-x-md">
+<button class="p-xs hover:bg-surface-container rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="chevron_left">chevron_left</span>
+</button>
+<span class="font-body-md font-bold text-on-surface">Mayo 2026</span>
+<button class="p-xs hover:bg-surface-container rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-7 gap-sm mb-lg">
+<div class="text-center font-label-sm text-outline pb-sm">LUN</div>
+<div class="text-center font-label-sm text-outline pb-sm">MAR</div>
+<div class="text-center font-label-sm text-outline pb-sm">MIE</div>
+<div class="text-center font-label-sm text-outline pb-sm">JUE</div>
+<div class="text-center font-label-sm text-outline pb-sm">VIE</div>
+<div class="text-center font-label-sm text-outline pb-sm">SAB</div>
+<div class="text-center font-label-sm text-outline pb-sm">DOM</div>
+<!-- Calendar Days (Abbreviated Sample) -->
+<div class="aspect-square flex flex-col items-center justify-center rounded-lg bg-surface-container-low text-on-surface-variant opacity-30">27</div>
+<div class="aspect-square flex flex-col items-center justify-center rounded-lg bg-surface-container-low text-on-surface-variant opacity-30">28</div>
+<div class="aspect-square flex flex-col items-center justify-center rounded-lg bg-surface-container-low text-on-surface-variant opacity-30">29</div>
+<div class="aspect-square flex flex-col items-center justify-center rounded-lg bg-surface-container-low text-on-surface-variant opacity-30">30</div>
+<div class="aspect-square bg-emerald-custom/10 border border-emerald-custom/20 rounded-lg flex flex-col items-center justify-center font-semibold text-emerald-custom">1</div>
+<div class="aspect-square bg-emerald-custom/10 border border-emerald-custom/20 rounded-lg flex flex-col items-center justify-center font-semibold text-emerald-custom">2</div>
+<div class="aspect-square bg-surface-container-low rounded-lg flex flex-col items-center justify-center text-on-surface-variant/50">3</div>
+<div class="aspect-square bg-emerald-custom/10 border border-emerald-custom/20 rounded-lg flex flex-col items-center justify-center font-semibold text-emerald-custom">4</div>
+<div class="aspect-square bg-emerald-custom/10 border border-emerald-custom/20 rounded-lg flex flex-col items-center justify-center font-semibold text-emerald-custom">5</div>
+<div class="aspect-square bg-rose-custom/10 border border-rose-custom/20 rounded-lg flex flex-col items-center justify-center font-semibold text-rose-custom">6</div>
+<div class="aspect-square bg-emerald-custom/10 border border-emerald-custom/20 rounded-lg flex flex-col items-center justify-center font-semibold text-emerald-custom">7</div>
+<div class="aspect-square bg-amber-custom/10 border border-amber-custom/20 rounded-lg flex flex-col items-center justify-center font-semibold text-amber-custom">8</div>
+<div class="aspect-square bg-surface-container-low rounded-lg flex flex-col items-center justify-center text-on-surface-variant/50">9</div>
+<div class="aspect-square bg-surface-container-low rounded-lg flex flex-col items-center justify-center text-on-surface-variant/50">10</div>
+<!-- Rest of the grid omitted for UI clarity -->
+<div class="col-span-7 py-sm text-center text-label-sm text-on-surface-variant/60 italic">... resto del mes visualizado en el sistema ...</div>
+</div>
+<div class="flex flex-wrap items-center gap-lg pt-md border-t border-outline-variant/30">
+<div class="flex items-center space-x-xs">
+<div class="w-3 h-3 bg-emerald-custom rounded-full"></div>
+<span class="text-label-sm text-on-surface-variant">Asistido</span>
+</div>
+<div class="flex items-center space-x-xs">
+<div class="w-3 h-3 bg-rose-custom rounded-full"></div>
+<span class="text-label-sm text-on-surface-variant">Inasistencia</span>
+</div>
+<div class="flex items-center space-x-xs">
+<div class="w-3 h-3 bg-amber-custom rounded-full"></div>
+<span class="text-label-sm text-on-surface-variant">Tardanza</span>
+</div>
+</div>
+</div>
+<!-- Course Cards Grid -->
+<div>
+<h3 class="font-headline-md text-on-surface mb-md">Detalle por Asignatura</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+<!-- Card 1 -->
+<div class="glass-card p-md rounded-xl border-l-4 border-emerald-custom flex flex-col justify-between">
+<div class="flex justify-between items-start mb-md">
+<div class="w-10 h-10 rounded-lg bg-primary-container/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="code">code</span>
+</div>
+<div class="text-right">
+<span class="text-display-lg font-bold text-emerald-custom leading-none">95%</span>
+<p class="text-label-sm text-on-surface-variant uppercase">Asistencia</p>
+</div>
+</div>
+<div>
+<h4 class="font-body-md font-bold text-on-surface">Estructuras de Datos</h4>
+<div class="flex items-center justify-between mt-xs">
+<p class="text-label-sm text-on-surface-variant">18/20 Sesiones</p>
+<span class="px-2 py-0.5 bg-emerald-custom/10 text-emerald-custom rounded text-[10px] font-bold uppercase tracking-wider">Óptimo</span>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="glass-card p-md rounded-xl border-l-4 border-amber-custom flex flex-col justify-between">
+<div class="flex justify-between items-start mb-md">
+<div class="w-10 h-10 rounded-lg bg-secondary-container/20 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined" data-icon="calculate">calculate</span>
+</div>
+<div class="text-right">
+<span class="text-display-lg font-bold text-amber-custom leading-none">88%</span>
+<p class="text-label-sm text-on-surface-variant uppercase">Asistencia</p>
+</div>
+</div>
+<div>
+<h4 class="font-body-md font-bold text-on-surface">Cálculo IV</h4>
+<div class="flex items-center justify-between mt-xs">
+<p class="text-label-sm text-on-surface-variant">14/16 Sesiones</p>
+<span class="px-2 py-0.5 bg-amber-custom/10 text-amber-custom rounded text-[10px] font-bold uppercase tracking-wider">Regular</span>
+</div>
+</div>
+</div>
+<!-- Card 3 (Warning) -->
+<div class="glass-card p-md rounded-xl border-l-4 border-rose-custom flex flex-col justify-between">
+<div class="flex justify-between items-start mb-md">
+<div class="w-10 h-10 rounded-lg bg-error-container/20 flex items-center justify-center text-error">
+<span class="material-symbols-outlined" data-icon="science">science</span>
+</div>
+<div class="text-right">
+<span class="text-display-lg font-bold text-rose-custom leading-none">75%</span>
+<p class="text-label-sm text-on-surface-variant uppercase">Asistencia</p>
+</div>
+</div>
+<div>
+<h4 class="font-body-md font-bold text-on-surface">Física II</h4>
+<div class="flex items-center justify-between mt-xs">
+<p class="text-label-sm text-on-surface-variant">9/12 Sesiones</p>
+<span class="px-2 py-0.5 bg-rose-custom/10 text-rose-custom rounded text-[10px] font-bold uppercase tracking-wider">Riesgo</span>
+</div>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="glass-card p-md rounded-xl border-l-4 border-emerald-custom flex flex-col justify-between">
+<div class="flex justify-between items-start mb-md">
+<div class="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined" data-icon="translate">translate</span>
+</div>
+<div class="text-right">
+<span class="text-display-lg font-bold text-emerald-custom leading-none">100%</span>
+<p class="text-label-sm text-on-surface-variant uppercase">Asistencia</p>
+</div>
+</div>
+<div>
+<h4 class="font-body-md font-bold text-on-surface">Inglés Técnico II</h4>
+<div class="flex items-center justify-between mt-xs">
+<p class="text-label-sm text-on-surface-variant">20/20 Sesiones</p>
+<span class="px-2 py-0.5 bg-emerald-custom/10 text-emerald-custom rounded text-[10px] font-bold uppercase tracking-wider">Impecable</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Sidebar Actions -->
+<div class="lg:col-span-4 flex flex-col gap-lg">
+<!-- Primary Action Widget -->
+<div class="bg-primary text-on-primary p-lg rounded-2xl shadow-xl relative overflow-hidden group">
+<div class="absolute -right-8 -bottom-8 opacity-10 group-hover:scale-110 transition-transform duration-500">
+<span class="material-symbols-outlined text-[160px]" data-icon="assignment_turned_in">assignment_turned_in</span>
+</div>
+<div class="relative z-10">
+<h3 class="font-headline-md mb-md">Gestión de Faltas</h3>
+<p class="text-body-md text-on-primary/80 mb-xl leading-relaxed">¿Inasistencia por salud o fuerza mayor? Registra tu justificación para evitar penalizaciones en el promedio.</p>
+<button class="w-full py-md px-lg bg-white text-primary rounded-xl font-bold flex items-center justify-center space-x-md shadow-lg hover:bg-surface-bright transition-all">
+<span class="material-symbols-outlined" data-icon="add_circle">add_circle</span>
+<span class="">Justificar Inasistencia</span>
+</button>
+</div>
+</div>
+<!-- Info Card -->
+<div class="glass-card p-lg rounded-xl border-t-4 border-primary">
+<h4 class="font-body-md font-bold text-on-surface mb-md flex items-center">
+<span class="material-symbols-outlined mr-sm text-primary" data-icon="info">info</span>
+                        Información Importante
+                    </h4>
+<ul class="space-y-md text-label-sm text-on-surface-variant">
+<li class="flex items-start">
+<span class="w-1.5 h-1.5 bg-primary rounded-full mt-1.5 mr-2 shrink-0"></span>
+                            Tienes 48 horas para presentar justificaciones.
+                        </li>
+<li class="flex items-start">
+<span class="w-1.5 h-1.5 bg-primary rounded-full mt-1.5 mr-2 shrink-0"></span>
+                            El límite de inasistencias es del 30% por curso.
+                        </li>
+<li class="flex items-start">
+<span class="w-1.5 h-1.5 bg-primary rounded-full mt-1.5 mr-2 shrink-0"></span>
+                            3 tardanzas equivalen a 1 inasistencia injustificada.
+                        </li>
+</ul>
+</div>
+<!-- Upcoming Classes Widget -->
+<div class="glass-card p-lg rounded-xl">
+<h3 class="font-headline-md text-on-surface mb-md">Próximas Sesiones</h3>
+<div class="space-y-md">
+<div class="flex items-center p-sm hover:bg-surface-container-low rounded-lg transition-colors cursor-pointer border border-transparent hover:border-outline-variant/30">
+<div class="bg-surface-container text-primary font-bold text-center w-12 py-1 rounded shrink-0">
+<span class="block text-[10px] uppercase">Hoy</span>
+<span class="block text-md leading-none">14:00</span>
+</div>
+<div class="ml-md">
+<p class="text-label-sm font-bold text-on-surface">Estructuras de Datos</p>
+<p class="text-[10px] text-on-surface-variant">Aula A-302 • L1</p>
+</div>
+</div>
+<div class="flex items-center p-sm hover:bg-surface-container-low rounded-lg transition-colors cursor-pointer border border-transparent hover:border-outline-variant/30">
+<div class="bg-surface-container text-on-surface-variant font-bold text-center w-12 py-1 rounded shrink-0">
+<span class="block text-[10px] uppercase">Mañ</span>
+<span class="block text-md leading-none">08:00</span>
+</div>
+<div class="ml-md">
+<p class="text-label-sm font-bold text-on-surface">Física II</p>
+<p class="text-[10px] text-on-surface-variant">Lab de Ciencias • L2</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full py-lg mt-auto bg-surface-container-low dark:bg-inverse-surface border-t border-outline-variant/30">
+<div class="flex flex-col md:flex-row justify-between items-center px-gutter max-w-container-max mx-auto gap-md">
+<div class="flex items-center gap-sm">
+<span class="brand-font text-label-sm font-bold text-secondary">Reten IA</span>
+<span class="font-body-md text-label-sm text-on-surface-variant">© 2026. Todos los derechos reservados.</span>
+</div>
+<div class="flex gap-lg">
+<a class="text-on-surface-variant font-body-md text-label-sm hover:text-primary transition-colors" href="#">Privacidad</a>
+<a class="text-on-surface-variant font-body-md text-label-sm hover:text-primary transition-colors" href="#">Términos</a>
+<a class="text-on-surface-variant font-body-md text-label-sm hover:text-primary transition-colors" href="#">Soporte</a>
+</div>
+</div>
+</footer>
+
+</body></html>

@@ -1,0 +1,367 @@
+<!DOCTYPE html><html class="light" lang="es"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Reten IA - Notas</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&amp;family=Quicksand:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+ 
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed": "#dde1ff",
+                        "secondary-fixed": "#e5deff",
+                        "on-secondary-container": "#605b7d",
+                        "tertiary": "#576065",
+                        "surface-container": "#e5eeff",
+                        "error": "#ba1a1a",
+                        "secondary-container": "#dcd5fd",
+                        "error-container": "#ffdad6",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed-variant": "#3f484d",
+                        "on-secondary-fixed-variant": "#474363",
+                        "secondary-fixed-dim": "#c8c2e9",
+                        "outline-variant": "#c6c5d2",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed-dim": "#bfc8ce",
+                        "tertiary-container": "#b0b9bf",
+                        "surface-dim": "#cbdbf5",
+                        "surface-container-high": "#dce9ff",
+                        "on-primary-fixed": "#001354",
+                        "surface-variant": "#d3e4fe",
+                        "surface-container-highest": "#d3e4fe",
+                        "inverse-surface": "#213145",
+                        "on-secondary-fixed": "#1b1735",
+                        "on-tertiary-fixed": "#141d21",
+                        "inverse-primary": "#b8c4ff",
+                        "background": "#f8f9ff",
+                        "primary": "#4b5a9c",
+                        "on-primary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "surface-tint": "#4b5a9c",
+                        "on-tertiary-container": "#414a4f",
+                        "inverse-on-surface": "#eaf1ff",
+                        "outline": "#767681",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary": "#5f5a7c",
+                        "on-primary-fixed-variant": "#334282",
+                        "primary-container": "#a5b4fc",
+                        "surface-container-low": "#eff4ff",
+                        "primary-fixed-dim": "#b8c4ff",
+                        "tertiary-fixed": "#dbe4ea",
+                        "on-surface": "#0b1c30",
+                        "on-background": "#0b1c30",
+                        "surface": "#f8f9ff",
+                        "on-surface-variant": "#454650",
+                        "surface-bright": "#f8f9ff",
+                        "on-primary-container": "#354484"
+                    },
+                    "borderRadius": {
+                      "DEFAULT": "0.5rem",
+                      "lg": "1rem",
+                      "xl": "1.5rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xs": "4px",
+                      "lg": "24px",
+                      "unit": "4px",
+                      "sm": "8px",
+                      "xl": "48px",
+                      "container-max": "1200px",
+                      "md": "16px",
+                      "gutter": "24px"
+              },
+              "fontFamily": {
+                      "display-lg": ["Fredoka", "sans-serif"],
+                      "headline-md": ["Fredoka", "sans-serif"],
+                      "body-md": ["Quicksand", "sans-serif"],
+                      "label-sm": ["Quicksand", "sans-serif"]
+              },
+              "fontSize": {
+                      "display-lg": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                      "headline-md": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                      "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "500"}],
+                      "label-sm": ["13px", {"lineHeight": "1.2", "letterSpacing": "0.02em", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>  body {
+            font-family: 'Quicksand', sans-serif;
+        }
+        h1, h2, h3, .brand-font {
+            font-family: 'Fredoka', sans-serif;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .mood-btn:hover {
+            transform: scale(1.1);
+        }
+        </style>
+</head>
+<body class="bg-surface font-body-md text-on-surface min-h-screen flex flex-col selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<nav class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-inverse-surface/80 backdrop-blur-xl border-b border-outline-variant/20 shadow-sm">
+<div class="flex justify-between items-center px-gutter py-md mx-auto h-16 max-w-6xl"><!-- Brand -->
+<div class="flex items-center gap-sm flex-1">
+<span class="brand-font text-headline-md font-bold text-primary dark:text-inverse-primary tracking-tight">Reten IA</span>
+</div>
+<!-- Navigation Links - Centered -->
+<div class="hidden md:flex items-center gap-lg justify-center">
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-inverse-primary transition-colors font-label-sm text-label-sm hover:bg-primary-container/20 rounded-lg px-sm py-xs" href="#">Inicio</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-inverse-primary transition-colors font-label-sm text-label-sm hover:bg-primary-container/20 rounded-lg px-sm py-xs" href="#">Alertas</a>
+<a class="text-primary dark:text-inverse-primary font-bold border-b-2 border-primary dark:border-inverse-primary pb-1 font-label-sm text-label-sm" href="#">Notas</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-inverse-primary transition-colors font-label-sm text-label-sm hover:bg-primary-container/20 rounded-lg px-sm py-xs" href="#">Asistencia</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-inverse-primary transition-colors font-label-sm text-label-sm hover:bg-primary-container/20 rounded-lg px-sm py-xs" href="#">Apoyo</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-inverse-primary transition-colors font-label-sm text-label-sm hover:bg-primary-container/20 rounded-lg px-sm py-xs" href="#">Perfil</a>
+</div>
+<!-- Trailing Actions - Grouped -->
+<div class="flex items-center justify-end gap-xs flex-1">
+<button class="flex items-center gap-xs px-md py-sm rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm hover:scale-105 active:scale-95 transition-all duration-200 shadow-sm">
+<span class="material-symbols-outlined text-[18px] transition-transform duration-300 group-hover:scale-110" data-icon="logout">logout</span>
+<span class="">Cerrar sesión</span>
+</button>
+<button class="p-sm rounded-full text-on-surface-variant hover:bg-surface-variant transition-all group flex items-center justify-center hover:scale-110">
+<span class="material-symbols-outlined transition-transform duration-500 group-hover:rotate-90">settings</span>
+</button>
+</div></div>
+</nav>
+<div class="flex items-center justify-end gap-md w-1/4 stitch-anim-fade-in">
+<button class="flex items-center gap-2 px-4 py-2 bg-secondary/10 hover:bg-secondary/20 text-secondary font-bold rounded-full transition-all active:scale-95">
+<span class="material-symbols-outlined text-sm" data-icon="logout">logout</span>
+<span class="text-label-sm font-label-sm">Cerrar Sesión</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-primary-container/20 rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</div></header>
+<main class="max-w-container-max mx-auto px-gutter py-xl pb-24 md:pb-12">
+<div class="flex flex-col gap-lg">
+<!-- Header Section -->
+<section>
+<h1 class="text-display-lg font-display-lg text-primary mb-2">Portal de Notas</h1>
+<p class="text-on-surface-variant">Ciclo Académico 2026-1 • Estudiante: 2026104491</p>
+</section>
+<!-- Top Bento Row -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-lg">
+<!-- Summary Card: Promedio General -->
+<div class="md:col-span-4 glass-card p-lg rounded-xl flex flex-col items-center justify-center text-center">
+<h3 class="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider mb-4">Promedio General</h3>
+<div class="relative w-40 h-40 flex items-center justify-center">
+<svg class="w-full h-full transform -rotate-90">
+<circle class="text-primary-container/30" cx="80" cy="80" fill="transparent" r="70" stroke="currentColor" stroke-width="12"></circle>
+<circle class="text-primary" cx="80" cy="80" fill="transparent" r="70" stroke="currentColor" stroke-dasharray="440" stroke-dashoffset="66" stroke-linecap="round" stroke-width="12"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-display-lg font-display-lg text-primary leading-none">17.5</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">Sobre 20</span>
+</div>
+</div>
+<div class="mt-6 flex items-center gap-2 text-secondary font-bold">
+<span class="material-symbols-outlined" data-icon="trending_up">trending_up</span>
+<span class="text-label-sm font-label-sm">+0.4 vs Ciclo Anterior</span>
+</div>
+</div>
+<!-- AI Observations Panel -->
+<div class="md:col-span-8 glass-card p-lg rounded-xl bg-gradient-to-br from-primary-container/10 to-secondary-container/10">
+<div class="flex items-center gap-sm mb-4">
+<div class="bg-primary p-2 rounded-lg text-on-primary">
+<span class="material-symbols-outlined" data-icon="psychology">psychology</span>
+</div>
+<h3 class="text-headline-md font-headline-md text-primary">Observaciones de la IA</h3>
+</div>
+<div class="space-y-md">
+<div class="flex gap-md items-start p-md bg-white/40 rounded-lg">
+<span class="material-symbols-outlined text-secondary" data-icon="auto_awesome">auto_awesome</span>
+<div>
+<p class="font-bold text-primary mb-1">Predicción de Finalización</p>
+<p class="text-body-md">Basado en tu tendencia actual, se estima un promedio final de <span class="font-bold text-primary">17.8</span>. Estás en el decil superior de tu facultad.</p>
+</div>
+</div>
+<div class="flex gap-md items-start p-md bg-error-container/20 rounded-lg border border-error/10">
+<span class="material-symbols-outlined text-error" data-icon="warning">warning</span>
+<div>
+<p class="font-bold text-error mb-1">Oportunidad de Mejora: Física II</p>
+<p class="text-body-md">Tus últimas notas en laboratorios han bajado un 15%. Te recomendamos revisar los conceptos de Termodinámica antes del próximo examen parcial para asegurar el 18.</p>
+</div>
+</div>
+<div class="flex justify-end mt-4">
+<button class="text-primary font-bold text-label-sm flex items-center gap-1 hover:underline">
+                                Ver Plan de Estudio Sugerido <span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Lower Bento Row -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-lg">
+<!-- Tus Cursos Grid -->
+<div class="md:col-span-7 glass-card p-lg rounded-xl overflow-hidden">
+<div class="flex justify-between items-center mb-6">
+<h3 class="text-headline-md font-headline-md text-primary">Tus Cursos</h3>
+<button class="text-label-sm font-label-sm text-secondary hover:underline">Exportar PDF</button>
+</div>
+<div class="space-y-md">
+<!-- Course Row 1 -->
+<div class="flex items-center justify-between p-md bg-white/50 rounded-xl hover:bg-white/80 transition-all border border-transparent hover:border-primary-container/30">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg bg-primary-container/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="code">code</span>
+</div>
+<div>
+<p class="font-bold text-on-surface">Estructuras de Datos</p>
+<p class="text-label-sm text-on-surface-variant">Sección A • Prof. Valdivia</p>
+</div>
+</div>
+<div class="flex items-center gap-xl">
+<div class="text-right">
+<p class="text-headline-md font-headline-md text-primary">18.5</p>
+<span class="px-2 py-0.5 bg-secondary-container/30 text-on-secondary-container text-[10px] uppercase font-bold rounded-full">En Progreso</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+<!-- Course Row 2 -->
+<div class="flex items-center justify-between p-md bg-white/50 rounded-xl hover:bg-white/80 transition-all border border-transparent hover:border-primary-container/30">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg bg-secondary-container/20 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined" data-icon="calculate">calculate</span>
+</div>
+<div>
+<p class="font-bold text-on-surface">Cálculo IV</p>
+<p class="text-label-sm text-on-surface-variant">Sección B • Prof. Mendez</p>
+</div>
+</div>
+<div class="flex items-center gap-xl">
+<div class="text-right">
+<p class="text-headline-md font-headline-md text-primary">16.0</p>
+<span class="px-2 py-0.5 bg-secondary-container/30 text-on-secondary-container text-[10px] uppercase font-bold rounded-full">En Progreso</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+<!-- Course Row 3 -->
+<div class="flex items-center justify-between p-md bg-white/50 rounded-xl hover:bg-white/80 transition-all border border-transparent hover:border-primary-container/30">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg bg-error-container/10 flex items-center justify-center text-error">
+<span class="material-symbols-outlined" data-icon="bolt">bolt</span>
+</div>
+<div>
+<p class="font-bold text-on-surface">Física II</p>
+<p class="text-label-sm text-on-surface-variant">Sección C • Prof. Ruiz</p>
+</div>
+</div>
+<div class="flex items-center gap-xl">
+<div class="text-right">
+<p class="text-headline-md font-headline-md text-error">13.5</p>
+<span class="px-2 py-0.5 bg-error-container/30 text-error text-[10px] uppercase font-bold rounded-full">Crítico</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Rendimiento por Curso Bar Chart -->
+<div class="md:col-span-5 glass-card p-lg rounded-xl">
+<h3 class="text-headline-md font-headline-md text-primary mb-6">Tendencia de Rendimiento</h3>
+<div class="h-64 flex relative mt-4 stitch-anim-fade-in">
+  <div class="flex flex-col justify-between text-[13px] font-bold text-on-surface-variant/70 pr-2 h-[200px]">
+    <span class="">100%</span>
+    <span class="">75%</span>
+    <span class="">50%</span>
+    <span class="">25%</span>
+    <span class="">0%</span>
+  </div>
+  <div class="flex-1 flex flex-col">
+    <div class="relative flex-1 h-[200px]">
+      <svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 400 200">
+        <defs>
+          <linearGradient id="lineGradient" x1="0%" x2="0%" y1="0%" y2="100%">
+            <stop offset="0%" stop-color="#4b5a9c" stop-opacity="0.3"></stop>
+            <stop offset="100%" stop-color="#4b5a9c" stop-opacity="0"></stop>
+          </linearGradient>
+        </defs>
+        <line class="text-on-surface/5" stroke="currentColor" stroke-width="1" x1="0" x2="400" y1="0" y2="0"></line>
+        <line class="text-on-surface/5" stroke="currentColor" stroke-width="1" x1="0" x2="400" y1="50" y2="50"></line>
+        <line class="text-on-surface/5" stroke="currentColor" stroke-width="1" x1="0" x2="400" y1="100" y2="100"></line>
+        <line class="text-on-surface/5" stroke="currentColor" stroke-width="1" x1="0" x2="400" y1="150" y2="150"></line>
+        <line class="text-on-surface/5" stroke="currentColor" stroke-width="1" x1="0" x2="400" y1="200" y2="200"></line>
+        
+        <path d="M0,150 L100,110 L200,130 L300,80 L400,60 V200 H0 Z" fill="url(#lineGradient)"></path>
+        <path d="M0,150 L100,110 L200,130 L300,80 L400,60" fill="none" stroke="#4b5a9c" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path>
+        
+        <circle cx="0" cy="150" fill="#4b5a9c" r="4"></circle>
+        <circle cx="100" cy="110" fill="#4b5a9c" r="4"></circle>
+        <circle cx="200" cy="130" fill="#4b5a9c" r="4"></circle>
+        <circle cx="300" cy="80" fill="#4b5a9c" r="4"></circle>
+        <circle class="animate-pulse" cx="400" cy="60" fill="#4b5a9c" r="6"></circle>
+      </svg>
+    </div>
+    <div class="flex justify-between mt-2">
+      <span class="text-[12px] font-bold text-on-surface-variant uppercase">PC1</span>
+      <span class="text-[12px] font-bold text-on-surface-variant uppercase">PC2</span>
+      <span class="text-[12px] font-bold text-on-surface-variant uppercase">PC3</span>
+      <span class="text-[12px] font-bold text-on-surface-variant uppercase">PC4</span>
+      <span class="text-[12px] font-bold text-primary uppercase">PARCIAL</span>
+    </div>
+  </div>
+</div>
+<div class="mt-8 p-md bg-secondary-container/10 rounded-lg flex items-center gap-md">
+<span class="material-symbols-outlined text-secondary" data-icon="insights">insights</span>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Tu rendimiento promedio ha aumentado desde la PC3.</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full bg-surface/90 backdrop-blur-xl border-t border-white/20 shadow-[0_-4px_20px_rgba(165,180,252,0.15)] z-50 flex justify-around items-center px-2 py-3 rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-on-surface-variant" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="text-label-sm font-label-sm">Inicio</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant" href="#">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="text-label-sm font-label-sm">Alertas</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary font-bold bg-primary-container/20 rounded-full px-4 py-1 active:scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="grade">grade</span>
+<span class="text-label-sm font-label-sm">Notas</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant" href="#">
+<span class="material-symbols-outlined" data-icon="event_available">event_available</span>
+<span class="text-label-sm font-label-sm">Asis.</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="text-label-sm font-label-sm">Perfil</span>
+</a>
+</nav>
+<footer class="w-full py-lg mt-auto bg-surface-container-low dark:bg-inverse-surface border-t border-outline-variant/30">
+<div class="flex flex-col md:flex-row justify-between items-center px-gutter max-w-container-max mx-auto gap-md">
+<div class="flex items-center gap-sm">
+<span class="brand-font text-label-sm font-bold text-secondary">Reten IA</span>
+<span class="font-body-md text-label-sm text-on-surface-variant">© 2026. Todos los derechos reservados.</span>
+</div>
+<div class="flex gap-lg">
+<a class="text-on-surface-variant font-body-md text-label-sm hover:text-primary transition-colors" href="#">Privacidad</a>
+<a class="text-on-surface-variant font-body-md text-label-sm hover:text-primary transition-colors" href="#">Términos</a>
+<a class="text-on-surface-variant font-body-md text-label-sm hover:text-primary transition-colors" href="#">Soporte</a>
+</div>
+</div>
+</footer>
+
+</body></html>

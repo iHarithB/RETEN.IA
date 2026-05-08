@@ -1,0 +1,349 @@
+<!DOCTYPE html><html lang="es"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&amp;family=Quicksand:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+             "colors": {
+                      "secondary-fixed": "#e5deff",
+                      "surface-container": "#e5eeff",
+                      "surface-bright": "#f8f9ff",
+                      "inverse-primary": "#b8c4ff",
+                      "on-tertiary-fixed-variant": "#3f484d",
+                      "on-tertiary-fixed": "#141d21",
+                      "surface": "#f8f9ff",
+                      "primary-container": "#a5b4fc",
+                      "on-surface": "#0b1c30",
+                      "background": "#f8f9ff",
+                      "primary": "#4b5a9c",
+                      "outline": "#767681",
+                      "secondary-fixed-dim": "#c8c2e9",
+                      "secondary": "#5f5a7c",
+                      "tertiary-fixed": "#dbe4ea",
+                      "primary-fixed-dim": "#b8c4ff",
+                      "on-secondary-fixed-variant": "#474363",
+                      "on-secondary-container": "#605b7d",
+                      "tertiary-fixed-dim": "#bfc8ce",
+                      "on-primary": "#ffffff",
+                      "outline-variant": "#c6c5d2",
+                      "error": "#ba1a1a",
+                      "on-surface-variant": "#454650",
+                      "inverse-on-surface": "#eaf1ff",
+                      "on-tertiary-container": "#414a4f",
+                      "on-secondary-fixed": "#1b1735",
+                      "surface-container-highest": "#d3e4fe",
+                      "on-primary-fixed-variant": "#334282",
+                      "on-primary-fixed": "#001354",
+                      "on-primary-container": "#354484",
+                      "tertiary": "#576065",
+                      "primary-fixed": "#dde1ff",
+                      "error-container": "#ffdad6",
+                      "on-error-container": "#93000a",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-dim": "#cbdbf5",
+                      "surface-container-high": "#dce9ff",
+                      "inverse-surface": "#213145",
+                      "on-background": "#0b1c30",
+                      "surface-variant": "#d3e4fe",
+                      "surface-tint": "#4b5a9c",
+                      "tertiary-container": "#b0b9bf",
+                      "secondary-container": "#dcd5fd",
+                      "on-secondary": "#ffffff",
+                      "surface-container-low": "#eff4ff",
+                      "on-tertiary": "#ffffff",
+                      "on-error": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.5rem",
+                      "lg": "1rem",
+                      "xl": "1.5rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xs": "4px",
+                      "lg": "24px",
+                      "unit": "4px",
+                      "sm": "8px",
+                      "xl": "48px",
+                      "container-max": "1200px",
+                      "md": "16px",
+                      "gutter": "24px"
+              },
+              "fontFamily": {
+                 "display-lg": ["Fredoka", "sans-serif"],    // Solo para el logo o títulos gigantes
+    "headline-md": ["Quicksand", "sans-serif"], // <-- CAMBIA ESTO A QUICKSAND
+    "body-md": ["Quicksand", "sans-serif"],
+    "label-sm": ["Quicksand", "sans-serif"]
+              },
+              "fontSize": {
+                      "display-lg": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                      "headline-md": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                      "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "500"}],
+                      "label-sm": ["13px", {"lineHeight": "1.2", "letterSpacing": "0.02em", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+      body {
+            font-family: 'Quicksand', sans-serif;
+        }
+        h1, h2, h3, .brand-font {
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .mood-btn:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-inverse-surface/80 backdrop-blur-xl border-b border-outline-variant/20 shadow-sm">
+<div class="flex justify-between items-center px-gutter py-md mx-auto h-16 max-w-6xl"><!-- Brand -->
+<div class="flex items-center gap-sm flex-1">
+<span class="brand-font text-headline-md font-bold text-primary dark:text-inverse-primary tracking-tight">Reten IA</span>
+</div>
+<!-- Navigation Links - Centered -->
+<div class="hidden md:flex items-center gap-lg justify-center">
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-inverse-primary transition-colors font-label-sm text-label-sm hover:bg-primary-container/20 rounded-lg px-sm py-xs" href="#">Inicio</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-inverse-primary transition-colors font-label-sm text-label-sm hover:bg-primary-container/20 rounded-lg px-sm py-xs" href="#">Alertas</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-inverse-primary transition-colors font-label-sm text-label-sm hover:bg-primary-container/20 rounded-lg px-sm py-xs" href="#">Notas</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-inverse-primary transition-colors font-label-sm text-label-sm hover:bg-primary-container/20 rounded-lg px-sm py-xs" href="#">Asistencia</a>
+<a class="text-primary dark:text-inverse-primary font-bold border-b-2 border-primary dark:border-inverse-primary pb-1 font-label-sm text-label-sm" href="#">Apoyo</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-inverse-primary transition-colors font-label-sm text-label-sm hover:bg-primary-container/20 rounded-lg px-sm py-xs" href="#">Perfil</a>
+</div>
+<!-- Trailing Actions - Grouped -->
+<div class="flex items-center justify-end gap-xs flex-1">
+<button class="flex items-center gap-xs px-md py-sm rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm hover:scale-105 active:scale-95 transition-all duration-200 shadow-sm">
+<span class="material-symbols-outlined text-[18px] transition-transform duration-300 group-hover:scale-110" data-icon="logout">logout</span>
+<span class="">Cerrar sesión</span>
+</button>
+<button class="p-sm rounded-full text-on-surface-variant hover:bg-surface-variant transition-all group flex items-center justify-center hover:scale-110">
+<span class="material-symbols-outlined transition-transform duration-500 group-hover:rotate-90">settings</span>
+</button>
+</div></div>
+</nav>
+<main class="flex-grow max-w-container-max mx-auto w-full px-lg py-xl">
+<!-- Header Section -->
+<header class="mt-10 mb-xl text-center md:text-left">
+    <h1 class="font-display-lg text-display-lg text-primary mb-xs">Centro de Apoyo</h1>
+</header>
+<!-- Main Content Area -->
+<div class="space-y-xl">
+
+<!-- 1. Asistencia Psicológica por IA (Top Section) -->
+<section>
+<div class="glass-card rounded-2xl overflow-hidden shadow-lg border-2 border-primary/10">
+<div class="flex flex-col md:flex-row items-center gap-lg p-sm md:p-md">
+<div class="flex-shrink-0 bg-primary-container/20 p-md rounded-full">
+<span class="material-symbols-outlined text-primary animate-pulse text-[36px]" data-icon="psychology">psychology</span>
+</div>
+<div class="flex-grow text-center md:text-left">
+<div class="flex items-center justify-center md:justify-start gap-sm mb-xs">
+<span class="material-symbols-outlined text-primary" data-icon="auto_awesome">auto_awesome</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">Asistencia Psicológica por IA</h2>
+</div>
+
+<p class="font-body-md text-on-surface max-w-xl">Habla con nuestra IA diseñada para escucharte y ofrecerte orientación emocional en cualquier momento, de forma privada y segura.</p>
+<div class="flex flex-wrap justify-center md:justify-start gap-md">
+<button class="bg-primary text-on-primary px-xl rounded-full font-bold flex items-center gap-sm hover:scale-105 transition-transform py-sm">
+<span class="material-symbols-outlined" data-icon="chat">chat</span>
+                                    Iniciar conversación privada
+                                </button>
+<button class="border-2 border-primary text-primary px-xl rounded-full font-bold hover:bg-primary/5 transition-colors py-sm">
+                                    Conocer más sobre el servicio
+                                </button>
+</div>
+</div>
+</div>
+<div class="bg-primary/5 px-lg flex items-center justify-center gap-md text-label-sm text-outline py-1">
+<span class="flex items-center gap-xs"><span class="material-symbols-outlined text-[16px]" data-icon="lock">lock</span> Confidencial</span>
+<span class="flex items-center gap-xs"><span class="material-symbols-outlined text-[16px]" data-icon="schedule">schedule</span> Disponible 24/7</span>
+<span class="flex items-center gap-xs"><span class="material-symbols-outlined text-[16px]" data-icon="verified_user">verified_user</span> Entorno seguro</span>
+</div>
+</div>
+</section>
+<!-- 2. Foros Activos and Mentorías (Side-by-Side) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-lg">
+<!-- Left Column: Foros Activos (Span 7) -->
+<section class="lg:col-span-7 space-y-md">
+<div class="flex items-center justify-between px-xs">
+<h2 class="font-headline-md text-headline-md text-primary">Foros Activos</h2>
+<button class="text-label-sm font-label-sm text-primary uppercase tracking-wider hover:underline">Ver todos</button>
+</div>
+<div class="space-y-md">
+<!-- Forum Card 1 -->
+<div class="glass-card p-md rounded-xl shadow-sm hover:shadow-md transition-shadow cursor-pointer flex justify-between items-center group">
+<div class="flex items-start gap-md p-sm md:p-md">
+<div class="bg-secondary-container p-sm rounded-lg text-on-secondary-container">
+<span class="material-symbols-outlined" data-icon="forum">forum</span>
+</div>
+<div>
+<h3 class="font-headline-md text-body-md font-bold mb-xs group-hover:text-primary transition-colors">Estrategias para Cálculo Integral</h3>
+<div class="flex gap-xs items-center">
+<span class="bg-surface-container-high text-on-surface-variant px-xs py-1 rounded text-label-sm font-label-sm">Matemáticas</span>
+<span class="text-outline text-label-sm">• 42 participantes</span>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-primary" data-icon="chevron_right">chevron_right</span>
+</div>
+<!-- Forum Card 2 -->
+<div class="glass-card p-md rounded-xl shadow-sm hover:shadow-md transition-shadow cursor-pointer flex justify-between items-center group">
+<div class="flex items-start gap-md p-sm md:p-md">
+<div class="bg-primary-container p-sm rounded-lg text-on-primary-container">
+<span class="material-symbols-outlined" data-icon="science">science</span>
+</div>
+<div>
+<h3 class="font-headline-md text-body-md font-bold mb-xs group-hover:text-primary transition-colors">Laboratorio de Física II: Reportes</h3>
+<div class="flex gap-xs items-center">
+<span class="bg-surface-container-high text-on-surface-variant px-xs py-1 rounded text-label-sm font-label-sm">Ingeniería</span>
+<span class="text-outline text-label-sm">• 15 participantes</span>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-primary" data-icon="chevron_right">chevron_right</span>
+</div>
+<!-- Forum Card 3 -->
+<div class="glass-card p-md rounded-xl shadow-sm hover:shadow-md transition-shadow cursor-pointer flex justify-between items-center group">
+<div class="flex items-start gap-md p-sm md:p-md">
+<div class="bg-tertiary-fixed p-sm rounded-lg text-on-tertiary-fixed-variant">
+<span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+</div>
+<div>
+<h3 class="font-headline-md text-body-md font-bold mb-xs group-hover:text-primary transition-colors">Club de Lectura Contemporánea</h3>
+<div class="flex gap-xs items-center">
+<span class="bg-surface-container-high text-on-surface-variant px-xs py-1 rounded text-label-sm font-label-sm">Humanidades</span>
+<span class="text-outline text-label-sm">• 89 participantes</span>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-primary" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+</section>
+<!-- Right Column: Mentorías (Span 5) -->
+<section class="lg:col-span-5 space-y-md">
+<div class="flex items-center justify-between px-xs">
+<h2 class="font-headline-md text-headline-md text-primary">Mentorías</h2>
+<span class="material-symbols-outlined text-outline" data-icon="person_search">person_search</span>
+</div>
+<div class="glass-card p-lg rounded-xl flex flex-col gap-md h-full">
+<div class="relative p-sm md:p-md">
+<input class="w-full bg-surface/50 border-outline-variant rounded-full py-md pl-xl pr-md text-body-md focus:ring-primary focus:border-primary transition-all" placeholder="Buscar mentor o materia..." type="text">
+<span class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-outline" data-icon="search">search</span>
+</div>
+<div class="space-y-sm">
+<!-- Mentor 1 -->
+<div class="flex items-center gap-md p-sm hover:bg-white/50 rounded-lg transition-colors cursor-pointer group">
+<img alt="Mentor Profile" class="w-12 h-12 rounded-full object-cover border-2 border-primary-fixed" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-fXI5kU1brfD411IEU1ikJkR8BB3Yy-TArS1FjD378rXwifa1b2eiFTd8aUsDKifuRwzYWvhagQTnKjkiDEGnNTsGBgqm4INcxTVr_fpCq8hXpD8BpJlaWCSbTxFIrTkSsL17cANYATyieeKoK3Bk-I6Mbcn3kbQSJN4eohuU_oN4suj5GzpyWKXaOWeLc6gNg_sN33du-kZRO1IBL9yRwk41eBebcmOXZWKYATtrGUspP4XVGAWqZuyeRO27061ykwOQXMGYPkMC">
+<div class="flex-grow">
+<h4 class="font-body-md font-bold text-on-surface">Cálculo Integral</h4>
+<p class="text-label-sm text-outline">Asesoría Individual • 16:00 Hoy</p>
+</div>
+<button class="bg-primary text-on-primary px-md py-xs rounded-full text-label-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity py-sm">Agendar</button>
+</div>
+<!-- Mentor 2 -->
+<div class="flex items-center gap-md p-sm hover:bg-white/50 rounded-lg transition-colors cursor-pointer group">
+<img alt="Mentor Profile" class="w-12 h-12 rounded-full object-cover border-2 border-primary-fixed" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBMH5U583HMCzki94JBhwdQ-9ukUXFQbUjzMf52REsM3K82PIo01yUh62xKYZyZWz_dU6XLZmQMfXfB0HtIUGW0AHWNYY4bdhu_sW1v1zCb4Dz1Pwym7BOpt7HYPiAx_485IHCLUtAUvT6WVLnLwbb-HeYRzEvOPMnhugSXOK0t4V1rlKITlNbE6hdm2aYsUpT9Wy09OpQOsXtWjqzv9KdSNbW3NJLtqT9elwUMtDmzE6sJ83L9weOdFacVKQdeE43QcEuy6ph7bjUM">
+<div class="flex-grow">
+<h4 class="font-body-md font-bold text-on-surface">Física General</h4>
+<p class="text-label-sm text-outline">Taller Grupal • 10:30 Mañana</p>
+</div>
+<button class="bg-primary text-on-primary px-md py-xs rounded-full text-label-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity py-sm">Agendar</button>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- 3. Recursos Sugeridos para ti (Bottom Section) -->
+<section class="space-y-md">
+<div class="flex items-center justify-between px-xs">
+<h2 class="font-headline-md text-headline-md text-primary">Recursos Sugeridos para ti</h2>
+<div class="flex gap-xs items-center text-label-sm text-outline">
+<span class="material-symbols-outlined text-[16px]" data-icon="auto_awesome">auto_awesome</span>
+                        Personalizado por IA
+                    </div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-md">
+<!-- Resource 1 -->
+<div class="glass-card overflow-hidden rounded-xl group cursor-pointer hover:-translate-y-1 transition-transform">
+<div class="h-32 bg-secondary-container/30 flex items-center justify-center relative p-sm md:p-md">
+<span class="material-symbols-outlined text-[48px] text-secondary" data-icon="picture_as_pdf">picture_as_pdf</span>
+<div class="absolute top-2 right-2 bg-white/80 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest">PDF</div>
+</div>
+<div class="p-md">
+<h4 class="font-body-md font-bold text-on-surface line-clamp-1 mb-xs">Guía: Álgebra Lineal</h4>
+<p class="text-label-sm text-outline-variant">Basado en tu último examen</p>
+</div>
+</div>
+<!-- Resource 2 -->
+<div class="glass-card overflow-hidden rounded-xl group cursor-pointer hover:-translate-y-1 transition-transform">
+<div class="h-32 bg-primary-container/30 flex items-center justify-center relative p-sm md:p-md">
+<span class="material-symbols-outlined text-[48px] text-primary" data-icon="video_library">video_library</span>
+<div class="absolute top-2 right-2 bg-white/80 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest">Video</div>
+</div>
+<div class="p-md">
+<h4 class="font-body-md font-bold text-on-surface line-clamp-1 mb-xs">Máximos y Mínimos</h4>
+<p class="text-label-sm text-outline-variant">Repaso rápido (12 min)</p>
+</div>
+</div>
+<!-- Resource 3 -->
+<div class="glass-card overflow-hidden rounded-xl group cursor-pointer hover:-translate-y-1 transition-transform">
+<div class="h-32 bg-tertiary-fixed/30 flex items-center justify-center relative p-sm md:p-md">
+<span class="material-symbols-outlined text-[48px] text-tertiary" data-icon="description">description</span>
+<div class="absolute top-2 right-2 bg-white/80 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest">Doc</div>
+</div>
+<div class="p-md">
+<h4 class="font-body-md font-bold text-on-surface line-clamp-1 mb-xs">Plantilla de Ensayos</h4>
+<p class="text-label-sm text-outline-variant">Para Redacción Académica</p>
+</div>
+</div>
+<!-- Resource 4 -->
+<div class="glass-card overflow-hidden rounded-xl group cursor-pointer hover:-translate-y-1 transition-transform">
+<div class="h-32 bg-surface-container-highest/30 flex items-center justify-center relative p-sm md:p-md">
+<span class="material-symbols-outlined text-[48px] text-on-surface-variant" data-icon="quiz">quiz</span>
+<div class="absolute top-2 right-2 bg-white/80 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest">Test</div>
+</div>
+<div class="p-md">
+<h4 class="font-body-md font-bold text-on-surface line-clamp-1 mb-xs">Simulacro Química</h4>
+<p class="text-label-sm text-outline-variant">Prepárate para el parcial</p>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full py-lg mt-auto bg-surface-container-low dark:bg-inverse-surface border-t border-outline-variant/30">
+<div class="flex flex-col md:flex-row justify-between items-center px-gutter max-w-container-max mx-auto gap-md">
+<div class="flex items-center gap-sm">
+<span class="brand-font text-label-sm font-bold text-secondary">Reten IA</span>
+<span class="font-body-md text-label-sm text-on-surface-variant">© 2026. Todos los derechos reservados.</span>
+</div>
+<div class="flex gap-lg">
+<a class="text-on-surface-variant font-body-md text-label-sm hover:text-primary transition-colors" href="#">Privacidad</a>
+<a class="text-on-surface-variant font-body-md text-label-sm hover:text-primary transition-colors" href="#">Términos</a>
+<a class="text-on-surface-variant font-body-md text-label-sm hover:text-primary transition-colors" href="#">Soporte</a>
+</div>
+</div>
+</footer>
+
+
+</body></html>
