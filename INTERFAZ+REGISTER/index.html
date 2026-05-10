@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fabricio web - Iniciar Sesión</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+  <style>
+    :root {
+      --primary: #4b5a9c;
+      --primary-light: #6b7cbf;
+      --primary-fixed: #dde1ff;
+      --on-primary-fixed: #001354;
+      --surface: #f8f9ff;
+      --outline-variant: #c6c5d2;
+      --on-surface-variant: #454650;
+      --error: #ba1a1a;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      margin: 0; padding: 0; min-height: 100vh;
+      font-family: 'Quicksand', sans-serif;
+      background: linear-gradient(135deg, #eef1ff 0%, #f3f0ff 50%, #e8f0ff 100%);
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+    }
+    .login-card {
+      background: white; border-radius: 28px; padding: 48px 40px;
+      max-width: 460px; width: 100%;
+      box-shadow: 0 24px 80px rgba(75,90,156,0.15);
+      text-align: center;
+    }
+    .login-logo {
+      width: 80px; height: 80px; border-radius: 20px;
+      background: linear-gradient(135deg, var(--primary), #7986cb);
+      margin: 0 auto 20px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Fredoka', sans-serif; font-size: 32px; color: white; font-weight: 700;
+    }
+    .login-card h1 {
+      font-family: 'Fredoka', sans-serif; font-size: 28px; color: var(--primary); margin-bottom: 4px;
+    }
+    .login-card > p {
+      color: var(--on-surface-variant); font-size: 14px; margin-bottom: 28px;
+    }
+
+    /* Sección de perfil estudiantil */
+    .profile-section {
+      background: var(--surface);
+      border: 1.5px solid var(--outline-variant);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    .profile-section-title {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 15px; color: var(--primary); font-weight: 600;
+      display: flex; align-items: center; gap: 6px;
+      margin-bottom: 14px;
+    }
+    .profile-section-title .material-symbols-outlined { font-size: 18px; }
+    .field-label {
+      font-size: 12px; font-weight: 700; color: var(--on-surface-variant);
+      text-transform: uppercase; letter-spacing: 0.06em;
+      display: block; margin-bottom: 6px;
+    }
+    .select-field {
+      width: 100%; padding: 10px 14px;
+      border: 1.5px solid var(--outline-variant);
+      border-radius: 10px; background: white;
+      font-family: 'Quicksand', sans-serif; font-size: 14px; font-weight: 600;
+      color: #0b1c30; outline: none; cursor: pointer;
+      transition: border-color 0.2s;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23767681' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 36px;
+    }
+    .select-field:focus { border-color: var(--primary); }
+    .fields-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .divider {
+      display: flex; align-items: center; gap: 10px;
+      margin: 20px 0;
+      color: var(--on-surface-variant); font-size: 13px; font-weight: 600;
+    }
+    .divider::before, .divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--outline-variant);
+    }
+
+    .btn-oauth {
+      width: 100%; padding: 14px 20px; margin-bottom: 10px;
+      border-radius: 14px; border: 1.5px solid #e0e0e0;
+      background: white; cursor: pointer;
+      display: flex; align-items: center; gap: 14px;
+      font-family: 'Quicksand', sans-serif; font-size: 15px; font-weight: 700;
+      color: #0b1c30; transition: all 0.2s;
+    }
+    .btn-oauth:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(75,90,156,0.12); }
+    .btn-oauth svg { flex-shrink: 0; }
+
+    .profile-note {
+      font-size: 12px; color: var(--on-surface-variant);
+      background: var(--primary-fixed); border-radius: 8px;
+      padding: 8px 12px; margin-top: 12px;
+      display: flex; align-items: center; gap: 6px;
+      text-align: left;
+    }
+    .profile-note .material-symbols-outlined { font-size: 15px; color: var(--primary); flex-shrink: 0; }
+
+    #login-loading { display:none; margin-top:16px; text-align:center; }
+    .spinner {
+      width:32px; height:32px; border:3px solid #e0e7ff;
+      border-top-color: var(--primary); border-radius:50%;
+      animation: spin 0.8s linear infinite; margin: 0 auto 10px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .error-msg { color: var(--error); margin-top: 10px; font-size: 13px; font-weight: 600; }
+
+    .footer-note {
+      margin-top: 24px; font-size: 12px; color: var(--on-surface-variant);
+      line-height: 1.5;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      vertical-align: middle; font-size: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="login-card">
+  <div class="login-logo">Fw</div>
+  <h1>Fabricio web</h1>
+  <p>Plataforma académica personalizada con IA</p>
+
+  <!-- Perfil estudiantil -->
+  <div class="profile-section">
+    <div class="profile-section-title">
+      <span class="material-symbols-outlined">school</span>
+      Perfil Estudiantil
+    </div>
+    <div class="fields-row">
+      <div>
+        <label class="field-label" for="select-ciclo">Ciclo Actual</label>
+        <select class="select-field" id="select-ciclo">
+          <option value="">Seleccionar…</option>
+          <option value="I">I Ciclo</option>
+          <option value="II">II Ciclo</option>
+          <option value="III">III Ciclo</option>
+          <option value="IV">IV Ciclo</option>
+          <option value="V">V Ciclo</option>
+          <option value="VI">VI Ciclo</option>
+          <option value="VII">VII Ciclo</option>
+          <option value="VIII">VIII Ciclo</option>
+          <option value="IX">IX Ciclo</option>
+          <option value="X">X Ciclo</option>
+        </select>
+      </div>
+      <div>
+        <label class="field-label" for="select-carrera">Carrera</label>
+        <select class="select-field" id="select-carrera">
+          <option value="">Seleccionar…</option>
+          <option value="Ingeniería de Sistemas">Ing. de Sistemas</option>
+          <option value="Ingeniería Civil">Ing. Civil</option>
+          <option value="Ingeniería Industrial">Ing. Industrial</option>
+          <option value="Ingeniería Electrónica">Ing. Electrónica</option>
+          <option value="Ingeniería Ambiental">Ing. Ambiental</option>
+          <option value="Administración">Administración</option>
+          <option value="Contabilidad">Contabilidad</option>
+          <option value="Derecho">Derecho</option>
+          <option value="Medicina">Medicina</option>
+          <option value="Psicología">Psicología</option>
+          <option value="Arquitectura">Arquitectura</option>
+          <option value="Educación">Educación</option>
+          <option value="Economía">Economía</option>
+          <option value="Comunicaciones">Comunicaciones</option>
+          <option value="Otra">Otra carrera</option>
+        </select>
+      </div>
+    </div>
+    <div class="profile-note">
+      <span class="material-symbols-outlined">info</span>
+      Estos datos se guardarán en tu perfil y se mostrarán en tu panel de control.
+    </div>
+  </div>
+
+  <div class="divider">Inicia sesión con</div>
+
+  <button class="btn-oauth" onclick="loginWithGoogle()">
+    <svg width="22" height="22" viewBox="0 0 24 24">
+      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+    </svg>
+    Continuar con Google
+  </button>
+
+  <button class="btn-oauth" onclick="loginWithMicrosoft()">
+    <svg width="22" height="22" viewBox="0 0 24 24">
+      <rect x="1" y="1" width="10" height="10" fill="#F25022"/>
+      <rect x="13" y="1" width="10" height="10" fill="#7FBA00"/>
+      <rect x="1" y="13" width="10" height="10" fill="#00A4EF"/>
+      <rect x="13" y="13" width="10" height="10" fill="#FFB900"/>
+    </svg>
+    Continuar con Microsoft
+  </button>
+
+  <div id="login-loading">
+    <div class="spinner"></div>
+    <p style="font-size:14px;color:var(--on-surface-variant)">Iniciando sesión...</p>
+  </div>
+
+  <div id="error-msg" class="error-msg"></div>
+
+  <p class="footer-note">
+    Al iniciar sesión, aceptas los términos de uso de la plataforma.<br>
+    Tus datos académicos son privados y protegidos.
+  </p>
+</div>
+
+<script>
+  // ==================== FIREBASE ====================
+  const firebaseConfig = {
+    apiKey: "AIzaSyDP3D7hSwTh2C-mTTVR2K3oekpcZC8rMNo",
+    authDomain: "exp3-fb4e0.firebaseapp.com",
+    projectId: "exp3-fb4e0",
+    storageBucket: "exp3-fb4e0.firebasestorage.app",
+    messagingSenderId: "674918684313",
+    appId: "1:674918684313:web:0ce12129bfd90cae66ca08"
+  };
+
+  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  function showError(message) {
+    document.getElementById('error-msg').textContent = message;
+    document.getElementById('login-loading').style.display = 'none';
+  }
+
+  // Guarda el perfil estudiantil en Firestore después del login
+  async function saveStudentProfile(uid) {
+    const ciclo = document.getElementById('select-ciclo').value;
+    const carrera = document.getElementById('select-carrera').value;
+    if (!ciclo && !carrera) return; // nada que guardar
+    try {
+      await db.collection('usuarios').doc(uid).set({
+        ciclo: ciclo || null,
+        carrera: carrera || null,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+    } catch (e) {
+      console.warn('No se pudo guardar el perfil:', e);
+    }
+  }
+
+  async function loginWithGoogle() {
+    document.getElementById('login-loading').style.display = 'block';
+    document.getElementById('error-msg').textContent = '';
+    try {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
+      const result = await auth.signInWithPopup(provider);
+      await saveStudentProfile(result.user.uid);
+      console.log("✅ Login exitoso:", result.user.email);
+    } catch (error) {
+      console.error(error);
+      let msg = "Error al iniciar sesión";
+      if (error.code === 'auth/popup-blocked') msg = "❌ Popup bloqueado. Permite ventanas emergentes.";
+      else if (error.code === 'auth/cancelled-popup-request') msg = "❌ Operación cancelada.";
+      else if (error.code === 'auth/operation-not-allowed') msg = "❌ Google Auth no está habilitado en Firebase Console.";
+      else msg = "❌ " + error.message;
+      showError(msg);
+    }
+  }
+
+  async function loginWithMicrosoft() {
+    document.getElementById('login-loading').style.display = 'block';
+    document.getElementById('error-msg').textContent = '';
+    try {
+      const provider = new firebase.auth.OAuthProvider('microsoft.com');
+      const result = await auth.signInWithPopup(provider);
+      await saveStudentProfile(result.user.uid);
+    } catch (error) {
+      showError("Error Microsoft: " + error.message);
+    }
+  }
+
+  // Redirección automática si ya hay sesión
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      window.location.href = "dashboard.html";
+    }
+  });
+</script>
+</body>
+</html>
