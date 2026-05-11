@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Reten IA - Desertar</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Quicksand', sans-serif;
+    background: #f8f9ff;
+    min-height: 100vh;
+  }
+
+  .ms {
+    font-family: 'Material Symbols Outlined';
+    font-size: 18px;
+    vertical-align: middle;
+  }
+
+  /* ── PHASE 1: BOTÓN ── */
+  #phase-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f8f9ff 0%, #e5eeff 100%);
+  }
+
+  .desertar-btn {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(135deg, #ba1a1a, #e53935);
+    border: none;
+    border-radius: 50px;
+    padding: 18px 48px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 0 0 0 rgba(186,26,26,0.4);
+    animation: pulse 2s infinite;
+    transition: transform .15s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .desertar-btn:hover {
+    transform: scale(1.06);
+    animation: none;
+    box-shadow: 0 8px 32px rgba(186,26,26,0.35);
+  }
+  .desertar-btn:active { transform: scale(0.97); }
+
+  @keyframes pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(186,26,26,0.45); }
+    70%  { box-shadow: 0 0 0 20px rgba(186,26,26,0); }
+    100% { box-shadow: 0 0 0 0 rgba(186,26,26,0); }
+  }
+
+  .desertar-btn .icon {
+    font-size: 26px;
+    animation: shake 2.5s infinite;
+  }
+
+  @keyframes shake {
+    0%,100% { transform: rotate(0deg); }
+    10%      { transform: rotate(-12deg); }
+    20%      { transform: rotate(12deg); }
+    30%      { transform: rotate(-8deg); }
+    40%      { transform: rotate(8deg); }
+    50%      { transform: rotate(0deg); }
+  }
+
+  .ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.35);
+    transform: scale(0);
+    animation: ripple .6s linear;
+    pointer-events: none;
+  }
+  @keyframes ripple { to { transform: scale(4); opacity: 0; } }
+
+  /* ── PHASE 2: SPLASH ── */
+  #phase-splash {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(135deg, #4b5a9c 0%, #354484 60%, #1b1735 100%);
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    z-index: 9999;
+  }
+  #phase-splash.active { display: flex; }
+
+  .splash-logo {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 60px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -1px;
+    opacity: 0;
+    animation: fadeUp .6s .1s forwards;
+  }
+  .splash-msg {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 30px;
+    font-weight: 600;
+    color: #b8c4ff;
+    margin-top: 8px;
+    opacity: 0;
+    animation: fadeUp .6s .4s forwards;
+  }
+  .splash-bar-wrap {
+    width: 240px;
+    height: 6px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 99px;
+    margin-top: 40px;
+    overflow: hidden;
+    opacity: 0;
+    animation: fadeUp .4s .7s forwards;
+  }
+  .splash-bar {
+    height: 100%;
+    background: #b8c4ff;
+    border-radius: 99px;
+    width: 0%;
+    animation: loadBar 1.8s .8s ease forwards;
+  }
+  @keyframes loadBar { to { width: 100%; } }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .splash-dots {
+    display: flex;
+    gap: 8px;
+    margin-top: 20px;
+    opacity: 0;
+    animation: fadeUp .4s .9s forwards;
+  }
+  .splash-dots span {
+    width: 8px;
+    height: 8px;
+    background: #b8c4ff;
+    border-radius: 50%;
+    animation: dot 1.2s infinite;
+  }
+  .splash-dots span:nth-child(2) { animation-delay: .2s; }
+  .splash-dots span:nth-child(3) { animation-delay: .4s; }
+  @keyframes dot {
+    0%,80%,100% { transform: scale(1); opacity: .5; }
+    40%          { transform: scale(1.4); opacity: 1; }
+  }
+
+  /* ── PHASE 3: DASHBOARD ── */
+  #phase-dash {
+    display: none;
+    opacity: 0;
+    background: #f8f9ff;
+    min-height: 100vh;
+    animation: dashIn .5s forwards;
+  }
+  #phase-dash.active { display: block; }
+  @keyframes dashIn { to { opacity: 1; } }
+
+  /* NAV */
+  .d-nav {
+    background: rgba(248,249,255,.9);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid #c6c5d233;
+    padding: 0 24px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .d-brand {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: #4b5a9c;
+  }
+  .d-nav-links {
+    display: flex;
+    gap: 16px;
+  }
+  .d-nav-links a {
+    font-size: 13px;
+    font-weight: 600;
+    color: #454650;
+    text-decoration: none;
+    padding: 4px 8px;
+    border-radius: 8px;
+    transition: color .2s, background .2s;
+  }
+  .d-nav-links a:hover { color: #4b5a9c; background: rgba(165,180,252,.15); }
+  .d-nav-links a.active {
+    color: #4b5a9c;
+    border-bottom: 2px solid #4b5a9c;
+    border-radius: 0;
+  }
+  .btn-logout {
+    background: #ffdad6;
+    color: #93000a;
+    border: none;
+    border-radius: 99px;
+    font-family: 'Quicksand', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 7px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: transform .15s;
+  }
+  .btn-logout:hover { transform: scale(1.04); }
+
+  /* MAIN */
+  .d-main {
+    padding: 28px 24px 0;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .d-h1 {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 40px;
+    font-weight: 700;
+    color: #4b5a9c;
+  }
+  .d-sub  { color: #454650; font-size: 15px; font-style: italic; margin-top: 4px; }
+  .d-sub2 { color: #76768180; font-size: 13px; margin-top: 4px; }
+
+  .btn-primary {
+    background: #4b5a9c;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 11px 22px;
+    font-family: 'Quicksand', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 12px;
+    box-shadow: 0 4px 16px rgba(75,90,156,.25);
+    transition: transform .15s, box-shadow .15s;
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(75,90,156,.3);
+  }
+
+  /* GLASS */
+  .glass {
+    background: rgba(255,255,255,.7);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,.5);
+    border-radius: 16px;
+    padding: 18px;
+  }
+
+  /* GRID */
+  .d-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 16px;
+    margin-top: 24px;
+  }
+
+  /* MOOD */
+  .mood-card {
+    grid-column: span 12;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    background: linear-gradient(90deg, rgba(165,180,252,.25), rgba(220,213,253,.25));
+    border-radius: 16px;
+    padding: 18px;
+    border: 1px solid rgba(255,255,255,.5);
+  }
+  .mood-title {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 20px;
+    color: #0b1c30;
+  }
+  .mood-sub { font-size: 14px; color: #454650; margin-top: 2px; }
+  .mood-btns { display: flex; gap: 14px; flex-wrap: wrap; }
+  .mood-btn {
+    background: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 10px 14px;
+    font-size: 22px;
+    cursor: pointer;
+    transition: transform .2s, background .2s;
+    text-align: center;
+  }
+  .mood-btn:hover { transform: scale(1.15); }
+  .mood-btn div { font-size: 11px; font-weight: 700; color: #454650; margin-top: 4px; }
+
+  /* INSIGHT */
+  .insight-card { grid-column: span 8; }
+  .meta-card    { grid-column: span 4; text-align: center; }
+  .stat-card    { grid-column: span 4; }
+  .action-card  { grid-column: span 8; }
+
+  .card-title {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 19px;
+    color: #0b1c30;
+  }
+  .card-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    color: #767681;
+    text-transform: uppercase;
+  }
+  .badge {
+    background: #d3e4fe;
+    color: #354484;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 12px;
+  }
+  .insight-quote {
+    background: #eff4ff;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 14px;
+    color: #454650;
+    font-style: italic;
+    margin: 14px 0;
+  }
+  .mini-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .mini-stat {
+    background: rgba(255,255,255,.5);
+    border: 1px solid rgba(255,255,255,.6);
+    border-radius: 12px;
+    padding: 10px;
+  }
+  .mini-stat-label { font-size: 10px; font-weight: 700; color: #767681; text-transform: uppercase; }
+  .mini-stat-val   { font-size: 13px; font-weight: 700; margin-top: 4px; display: flex; align-items: center; gap: 4px; }
+  .c-primary   { color: #4b5a9c; }
+  .c-error     { color: #ba1a1a; }
+  .c-secondary { color: #5f5a7c; }
+
+  /* CIRCLE */
+  .circle-wrap {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin: 0 auto;
+  }
+  .circle-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .circle-pct {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: #4b5a9c;
+  }
+
+  /* STATS */
+  .stat-nums { font-size: 36px; font-weight: 700; color: #0b1c30; }
+  .stat-up   { color: #16a34a; font-weight: 700; font-size: 15px; }
+  .bars {
+    display: flex;
+    gap: 5px;
+    align-items: flex-end;
+    height: 80px;
+    margin-top: 14px;
+  }
+  .bar { flex: 1; background: #a5b4fc99; border-radius: 4px 4px 0 0; }
+  .bar.hi {
+    background: #4b5a9c;
+    box-shadow: 0 0 12px rgba(75,90,156,.3);
+  }
+
+  /* QUICK ACTIONS */
+  .quick-actions {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  .qa {
+    border-radius: 16px;
+    padding: 16px 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all .2s;
+    border: 1px solid transparent;
+  }
+  .qa:hover { transform: translateY(-3px); }
+  .qa .ms   { font-size: 24px; display: block; margin-bottom: 8px; }
+  .qa .lbl  { font-size: 12px; font-weight: 700; display: block; }
+  .qa1 { background: rgba(95,90,124,.12);  border-color: rgba(95,90,124,.2);  color: #5f5a7c; }
+  .qa2 { background: rgba(75,90,156,.10);  border-color: rgba(75,90,156,.2);  color: #4b5a9c; }
+  .qa3 { background: rgba(87,96,101,.10);  border-color: rgba(87,96,101,.2);  color: #576065; }
+  .qa4 { background: rgba(70,70,80,.07);   border-color: #c6c5d233;           color: #454650; }
+
+  /* FOOTER */
+  .d-footer {
+    margin-top: 32px;
+    padding: 16px 24px;
+    border-top: 1px solid #c6c5d233;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  @media (max-width: 768px) {
+    .insight-card,
+    .meta-card,
+    .stat-card,
+    .action-card { grid-column: span 12; }
+    .mini-stats   { grid-template-columns: 1fr 1fr; }
+    .d-nav-links  { display: none; }
+    .quick-actions { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+  <!-- ══ PHASE 1: BOTÓN ══ -->
+  <div id="phase-btn">
+    <div style="text-align:center">
+      <p style="font-family:'Fredoka',sans-serif;font-size:15px;color:#767681;margin-bottom:20px;letter-spacing:.05em;">¿Estás seguro?</p>
+      <button class="desertar-btn" id="btn-desertar" onclick="startFlow(event)">
+        <span class="icon ms">exit_to_app</span>
+        Desertar
+      </button>
+      <p style="font-size:12px;color:#c6c5d2;margin-top:18px;font-family:'Quicksand',sans-serif;">Haz clic para continuar...</p>
+    </div>
+  </div>
+
+  <!-- ══ PHASE 2: SPLASH ══ -->
+  <div id="phase-splash">
+    <div class="splash-logo">Reten IA</div>
+    <div class="splash-msg">¡NO TE RINDAS! 💪</div>
+    <div class="splash-bar-wrap"><div class="splash-bar"></div></div>
+    <div class="splash-dots"><span></span><span></span><span></span></div>
+  </div>
+
+  <!-- ══ PHASE 3: DASHBOARD ══ -->
+  <div id="phase-dash">
+
+    <!-- NAV -->
+    <nav class="d-nav">
+      <span class="d-brand">Reten IA</span>
+      <div class="d-nav-links">
+        <a href="#" class="active">Inicio</a>
+        <a href="#">Alertas</a>
+        <a href="#">Notas</a>
+        <a href="#">Asistencia</a>
+        <a href="#">Apoyo</a>
+        <a href="#">Perfil</a>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn-logout"><span class="ms">logout</span> Cerrar sesión</button>
+        <button style="padding:8px;border-radius:99px;border:none;background:transparent;cursor:pointer;color:#454650">
+          <span class="ms" style="font-size:22px">settings</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- MAIN -->
+    <div class="d-main">
+
+      <!-- Header -->
+      <header style="margin-bottom:4px;display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px">
+        <div>
+          <div class="d-h1">Hola de nuevo, Harith</div>
+          <div class="d-sub">"El éxito no es el final, el fracaso no es fatal: es el coraje para continuar lo que cuenta."</div>
+          <div class="d-sub2">Tu asistente inteligente ha procesado 12 nuevas notas hoy.</div>
+          <button class="btn-primary"><span class="ms">add</span> Nueva Nota</button>
+        </div>
+      </header>
+
+      <!-- Bento Grid -->
+      <div class="d-grid">
+
+        <!-- Mood -->
+        <div class="mood-card">
+          <div style="display:flex;align-items:center;gap:14px">
+            <div style="padding:12px;background:#fff;border-radius:16px;box-shadow:0 1px 6px rgba(0,0,0,.08)">
+              <span class="ms" style="color:#4b5a9c;font-size:26px">auto_awesome</span>
+            </div>
+            <div>
+              <div class="mood-title">¿Cómo te sientes hoy?</div>
+              <div class="mood-sub">Cuéntame tu estado de ánimo para personalizar tu experiencia.</div>
+            </div>
+          </div>
+          <div class="mood-btns">
+            <button class="mood-btn">😊<div>Genial</div></button>
+            <button class="mood-btn">🙂<div>Bien</div></button>
+            <button class="mood-btn">😐<div>Neutral</div></button>
+            <button class="mood-btn">☹️<div>Triste</div></button>
+            <button class="mood-btn">🔥<div>Motivado</div></button>
+          </div>
+        </div>
+
+        <!-- Insight -->
+        <div class="glass insight-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="padding:9px;background:#dde1ff;border-radius:12px">
+                <span class="ms" style="color:#354484;font-size:22px">insights</span>
+              </div>
+              <span class="card-title">Resumen de Inteligencia</span>
+            </div>
+            <span class="badge">Actualizado hace 5m</span>
+          </div>
+          <div class="insight-quote">
+            "Se han identificado patrones de riesgo basados en tus últimas notas del curso con menor desempeño."
+          </div>
+          <div class="mini-stats">
+            <div class="mini-stat">
+              <div class="mini-stat-label">Sentimiento</div>
+              <div class="mini-stat-val c-primary">
+                <span class="ms" style="font-size:16px">sentiment_satisfied</span> Positivo (82%)
+              </div>
+            </div>
+            <div class="mini-stat">
+              <div class="mini-stat-label">Urgencia</div>
+              <div class="mini-stat-val c-error">
+                <span class="ms" style="font-size:16px">priority_high</span> 3 Pendientes
+              </div>
+            </div>
+            <div class="mini-stat">
+              <div class="mini-stat-label">Foros Activos</div>
+              <div class="mini-stat-val c-secondary">
+                <span class="ms" style="font-size:16px">group</span> 12 Foros
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Meta Semanal -->
+        <div class="glass meta-card" style="display:flex;flex-direction:column;align-items:center;justify-content:center">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;align-self:flex-start">
+            <span class="ms c-primary" style="font-size:22px">target</span>
+            <span class="card-title">Meta Semanal</span>
+          </div>
+          <div class="circle-wrap">
+            <svg viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="40" fill="transparent" stroke="#a5b4fc44" stroke-width="8"/>
+              <circle cx="50" cy="50" r="40" fill="transparent" stroke="#4b5a9c" stroke-width="8"
+                stroke-dasharray="251.2" stroke-dashoffset="100" stroke-linecap="round"/>
+            </svg>
+            <div class="circle-pct">60%</div>
+          </div>
+          <p style="font-size:14px;color:#454650;margin-top:12px;font-weight:600">Completar 5 notas de apoyo</p>
+          <button style="margin-top:14px;padding:8px 20px;background:rgba(75,90,156,.1);color:#4b5a9c;border:1px solid rgba(75,90,156,.2);border-radius:99px;font-family:'Quicksand',sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .2s">
+            <span class="ms" style="font-size:16px">add</span> Agregar Meta
+          </button>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="glass stat-card">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+            <span class="ms c-primary" style="font-size:20px">trending_up</span>
+            <span class="card-label">Actividad de Notas</span>
+          </div>
+          <div>
+            <span class="stat-nums">458</span>
+            <span class="stat-up" style="margin-left:8px">+12%</span>
+          </div>
+          <div class="bars">
+            <div class="bar"    style="height:40%"></div>
+            <div class="bar"    style="height:60%"></div>
+            <div class="bar"    style="height:30%"></div>
+            <div class="bar"    style="height:80%"></div>
+            <div class="bar hi" style="height:100%"></div>
+            <div class="bar"    style="height:50%"></div>
+            <div class="bar"    style="height:70%"></div>
+          </div>
+        </div>
+
+        <!-- Acciones Rápidas -->
+        <div class="glass action-card">
+          <div class="card-title" style="margin-bottom:16px">Acciones Rápidas</div>
+          <div class="quick-actions">
+            <div class="qa qa1"><span class="ms">support_agent</span><span class="lbl">Asistencia</span></div>
+            <div class="qa qa2"><span class="ms">description</span><span class="lbl">Exportar PDF</span></div>
+            <div class="qa qa3"><span class="ms">forum</span><span class="lbl">Foros de Repaso</span></div>
+            <div class="qa qa4"><span class="ms">history</span><span class="lbl">Historial</span></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="d-footer">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-family:'Fredoka',sans-serif;font-size:14px;font-weight:700;color:#5f5a7c">Reten IA</span>
+        <span style="font-size:12px;color:#767681">© 2026. Todos los derechos reservados.</span>
+      </div>
+      <div style="display:flex;gap:20px">
+        <a href="#" style="font-size:12px;color:#767681;text-decoration:none">Privacidad</a>
+        <a href="#" style="font-size:12px;color:#767681;text-decoration:none">Términos</a>
+        <a href="#" style="font-size:12px;color:#767681;text-decoration:none">Soporte</a>
+      </div>
+    </footer>
+
+  </div><!-- /phase-dash -->
+
+<script>
+  function startFlow(e) {
+    // Ripple effect
+    const btn = document.getElementById('btn-desertar');
+    const ripple = document.createElement('span');
+    const rect = btn.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    ripple.className = 'ripple';
+    ripple.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX - rect.left - size/2}px;top:${e.clientY - rect.top - size/2}px`;
+    btn.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 600);
+
+    // Mostrar splash después de 300ms
+    setTimeout(() => {
+      document.getElementById('phase-btn').style.display = 'none';
+      document.getElementById('phase-splash').classList.add('active');
+
+      // Mostrar dashboard después de 2.8s
+      setTimeout(() => {
+        document.getElementById('phase-splash').classList.remove('active');
+        document.getElementById('phase-dash').classList.add('active');
+      }, 2800);
+    }, 300);
+  }
+</script>
+
+</body>
+</html>
