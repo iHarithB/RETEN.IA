@@ -1,0 +1,1634 @@
+<!DOCTYPE html>
+<html lang="es" class="light">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Reten IA — Dashboard Académico</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "primary": "#4b5a9c",
+          "primary-container": "#a5b4fc",
+          "primary-fixed": "#dde1ff",
+          "primary-fixed-dim": "#b8c4ff",
+          "on-primary": "#ffffff",
+          "on-primary-container": "#354484",
+          "on-primary-fixed": "#001354",
+          "on-primary-fixed-variant": "#334282",
+          "secondary": "#5f5a7c",
+          "secondary-container": "#dcd5fd",
+          "on-secondary": "#ffffff",
+          "on-secondary-container": "#605b7d",
+          "tertiary": "#576065",
+          "tertiary-container": "#b0b9bf",
+          "tertiary-fixed": "#dbe4ea",
+          "on-tertiary": "#ffffff",
+          "on-tertiary-container": "#414a4f",
+          "error": "#ba1a1a",
+          "error-container": "#ffdad6",
+          "on-error": "#ffffff",
+          "on-error-container": "#93000a",
+          "surface": "#f8f9ff",
+          "surface-bright": "#f8f9ff",
+          "surface-dim": "#cbdbf5",
+          "surface-variant": "#d3e4fe",
+          "surface-container": "#e5eeff",
+          "surface-container-low": "#eff4ff",
+          "surface-container-high": "#dce9ff",
+          "surface-container-highest": "#d3e4fe",
+          "surface-container-lowest": "#ffffff",
+          "on-surface": "#0b1c30",
+          "on-surface-variant": "#454650",
+          "outline": "#767681",
+          "outline-variant": "#c6c5d2",
+          "inverse-surface": "#213145",
+          "inverse-primary": "#b8c4ff",
+          "emerald": "#10b981",
+          "rose": "#f43f5e",
+          "amber": "#f59e0b",
+        },
+        fontFamily: {
+          "display": ["Fredoka", "sans-serif"],
+          "body": ["Quicksand", "sans-serif"],
+        }
+      }
+    }
+  }
+</script>
+
+<style>
+  body { font-family: 'Quicksand', sans-serif; }
+  h1, h2, h3, .brand-font { font-family: 'Fredoka', sans-serif; }
+  .glass-card {
+    background: rgba(255,255,255,0.72);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.55);
+    box-shadow: 0 4px 24px rgba(75,90,156,0.07);
+  }
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    vertical-align: middle;
+    font-size: 20px;
+    display: inline-block;
+  }
+  .page { display: none; }
+  .page.active { display: block; }
+  #toast {
+    position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+    background: #4b5a9c; color: white; padding: 12px 20px;
+    border-radius: 14px; font-size: 14px; font-weight: 600;
+    display: flex; align-items: center; gap: 8px;
+    box-shadow: 0 8px 24px rgba(75,90,156,0.3);
+    transform: translateY(80px); opacity: 0;
+    transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    pointer-events: none;
+    font-family: 'Quicksand', sans-serif;
+  }
+  #toast.show { transform: translateY(0); opacity: 1; }
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 500;
+    background: rgba(0,0,0,0.35); backdrop-filter: blur(4px);
+    display: none; align-items: center; justify-content: center; padding: 16px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: white; border-radius: 20px; padding: 32px;
+    max-width: 460px; width: 100%;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.15);
+    animation: modalIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes modalIn { from{opacity:0;transform:scale(0.85)} to{opacity:1;transform:scale(1)} }
+
+  /* MOOD BUTTONS - más llamativos */
+  .mood-btn { display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:all 0.25s;border:none;background:none;padding:4px; }
+  .mood-btn .emoji-wrap {
+    width:62px;height:62px;border-radius:18px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:34px;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    border:3px solid transparent;position:relative;overflow:hidden;
+  }
+  .mood-btn:hover .emoji-wrap { transform:scale(1.22) translateY(-4px);box-shadow:0 12px 28px rgba(0,0,0,0.18); }
+  .mood-btn.selected .emoji-wrap { transform:scale(1.15);border-color:white;box-shadow:0 8px 24px rgba(0,0,0,0.2); }
+  .mood-label { font-size:11px;font-weight:700;color:#454650;letter-spacing:0.03em; }
+  .mood-btn.selected .mood-label { color:#4b5a9c; }
+
+  /* Mood intensity slider */
+  .mood-intensity-bar {
+    width:100%;height:10px;border-radius:999px;background:#e5eeff;overflow:hidden;margin-top:4px;
+    transition:all 0.3s;
+  }
+  .mood-intensity-fill {
+    height:100%;border-radius:999px;transition:width 0.5s cubic-bezier(0.34,1.56,0.64,1);
+    background:linear-gradient(90deg,#7986cb,#4b5a9c);
+  }
+
+  /* COURSE ROWS */
+  .course-row { display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-radius:12px;background:rgba(255,255,255,0.5);border:1px solid transparent;cursor:pointer;transition:all 0.2s; }
+  .course-row:hover { background:rgba(255,255,255,0.85);border-color:#a5b4fc;transform:translateX(4px); }
+  .materias-table { width:100%;border-collapse:separate;border-spacing:0 10px; }
+  .materias-table thead th { font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#767681;padding:0 12px 8px;text-align:left; }
+  .materia-row td { background:rgba(255,255,255,0.55);padding:14px 12px;border-top:1px solid rgba(255,255,255,0.7);border-bottom:1px solid rgba(255,255,255,0.7);transition:background 0.2s; }
+  .materia-row td:first-child { border-left:1px solid rgba(255,255,255,0.7);border-radius:14px 0 0 14px;border-left:4px solid #a5b4fc; }
+  .materia-row td:last-child { border-right:1px solid rgba(255,255,255,0.7);border-radius:0 14px 14px 0; }
+  .materia-row:hover td { background:rgba(255,255,255,0.82); }
+  .materia-row.aprobado td:first-child { border-left-color:#059669; }
+  .materia-row.desaprobado td:first-child { border-left-color:#ba1a1a; }
+  .nota-input,.min-input { width:72px;padding:7px 10px;border:1.5px solid #c6c5d2;border-radius:9px;font-family:'Quicksand',sans-serif;font-size:14px;font-weight:700;text-align:center;outline:none;transition:border-color 0.2s;background:#eff4ff;color:#0b1c30; }
+  .nota-input:focus,.min-input:focus { border-color:#4b5a9c; }
+  .nota-input.aprobado { border-color:#059669;color:#059669;background:rgba(16,185,129,0.06); }
+  .nota-input.desaprobado { border-color:#ba1a1a;color:#ba1a1a;background:rgba(186,26,26,0.05); }
+  .estado-badge { display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:0.04em;transition:all 0.3s; }
+  .estado-badge.aprobado { background:rgba(16,185,129,0.12);color:#059669; }
+  .estado-badge.desaprobado { background:#ffdad6;color:#ba1a1a; }
+  .estado-badge.pendiente { background:#dce9ff;color:#767681; }
+  .materia-nombre input { border:none;background:transparent;font-family:'Quicksand',sans-serif;font-weight:700;font-size:14px;color:#0b1c30;outline:none;width:100%;cursor:text; }
+  .materia-nombre input:focus { border-bottom:1.5px dashed #4b5a9c; }
+  #chat-messages { display:flex;flex-direction:column;gap:12px;height:300px;overflow-y:auto;padding:4px; }
+  .chat-msg { max-width:80%;padding:10px 14px;border-radius:14px;font-size:14px;line-height:1.5; }
+  .chat-msg.user { align-self:flex-end;background:#4b5a9c;color:white;border-bottom-right-radius:4px; }
+  .chat-msg.bot { align-self:flex-start;background:#e5eeff;color:#0b1c30;border-bottom-left-radius:4px; }
+
+  /* PROFILE PANEL */
+  .avatar-upload-wrap { position:relative;width:120px;height:120px;margin:0 auto 8px;cursor:pointer; }
+  .avatar-upload-wrap img { width:120px;height:120px;border-radius:999px;object-fit:cover;border:4px solid white;box-shadow:0 4px 16px rgba(75,90,156,0.15);transition:filter 0.2s;display:block; }
+  .avatar-upload-wrap:hover img { filter:brightness(0.75); }
+  .avatar-overlay { position:absolute;inset:0;border-radius:999px;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s; }
+  .avatar-upload-wrap:hover .avatar-overlay { opacity:1; }
+  .avatar-overlay span { color:white;font-size:28px; }
+  .avatar-verified { position:absolute;bottom:4px;right:4px;background:#4b5a9c;padding:6px;border-radius:999px;border:2px solid white; }
+  .avatar-verified span { color:white;font-size:14px; }
+  #avatar-file-input { display:none; }
+  .select-field-inline { padding:9px 32px 9px 12px;border:1.5px solid #c6c5d2;border-radius:10px;font-family:'Quicksand',sans-serif;font-size:14px;font-weight:600;color:#0b1c30;background:#eff4ff;outline:none;cursor:pointer;transition:border-color 0.2s;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23767681' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;width:100%; }
+  .select-field-inline:focus { border-color:#4b5a9c; }
+  .nav-link { color:#454650;padding:6px 12px;border-radius:8px;cursor:pointer;border:none;background:none;font-family:'Quicksand',sans-serif;font-size:13px;font-weight:600;letter-spacing:0.02em;transition:all 0.2s;text-decoration:none;border-bottom:2px solid transparent; }
+  .nav-link:hover { color:#4b5a9c;background:rgba(75,90,156,0.08); }
+  .nav-link.active { color:#4b5a9c;font-weight:700;border-bottom-color:#4b5a9c; }
+  .cal-day{aspect-ratio:1;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.15s}
+  .cal-day.empty{color:#c6c5d2;background:transparent;cursor:default}
+  .cal-day.present{background:rgba(16,185,129,0.12);color:#059669;border:1px solid rgba(16,185,129,0.2)}
+  .cal-day.absent{background:rgba(244,63,94,0.12);color:#be123c;border:1px solid rgba(244,63,94,0.2)}
+  .cal-day.late{background:rgba(245,158,11,0.12);color:#b45309;border:1px solid rgba(245,158,11,0.2)}
+  .cal-day.today{outline:2px solid #4b5a9c}
+  .cal-day.future{background:#eff4ff;color:#454650}
+  .progress-bar { height:8px;border-radius:999px;background:#dce9ff;overflow:hidden; }
+  .progress-fill { height:100%;border-radius:999px;background:linear-gradient(90deg,#7986cb,#4b5a9c);transition:width 1s ease; }
+  .tone-btn { display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px;border-radius:14px;cursor:pointer;transition:all 0.2s;border:2px solid #c6c5d2;background:none;font-family:'Quicksand',sans-serif;font-size:13px;font-weight:600;color:#454650; }
+  .tone-btn.active,.tone-btn:hover { border-color:#4b5a9c;color:#4b5a9c;background:rgba(75,90,156,0.06); }
+  .alert-card { border-radius:14px;padding:20px;display:flex;gap:16px;align-items:flex-start; }
+  .guest-banner { background:linear-gradient(135deg,#fffbea,#fff3cd);border:1.5px solid rgba(245,158,11,0.3);border-radius:14px;padding:12px 18px;margin-bottom:20px;display:flex;align-items:center;gap:12px;font-size:13px;font-weight:600;color:#78490a; }
+  .editable-name-wrap { display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:4px; }
+  .name-edit-input { font-family:'Fredoka',sans-serif;font-size:20px;border:none;border-bottom:2px solid #4b5a9c;outline:none;text-align:center;color:#4b5a9c;background:transparent;width:200px; }
+  .perfil-chip { display:inline-flex;align-items:center;gap:6px;background:rgba(75,90,156,0.1);color:#4b5a9c;padding:4px 12px;border-radius:999px;font-size:13px;font-weight:600;margin-right:8px; }
+  .promedio-banner { border-radius:16px;padding:20px 24px;background:linear-gradient(135deg,#4b5a9c,#7986cb);color:white;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px; }
+  .add-materia-btn { display:flex;align-items:center;gap:8px;padding:9px 18px;border-radius:12px;background:rgba(75,90,156,0.08);color:#4b5a9c;border:1.5px dashed rgba(75,90,156,0.3);font-family:'Quicksand',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s;width:100%;justify-content:center;margin-top:8px; }
+  .add-materia-btn:hover { background:rgba(75,90,156,0.14);border-color:#4b5a9c; }
+  .del-btn { padding:6px;border:none;background:none;cursor:pointer;color:#c6c5d2;border-radius:8px;transition:all 0.2s;display:flex;align-items:center; }
+  .del-btn:hover { color:#ba1a1a;background:#ffdad6; }
+  ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#c6c5d2;border-radius:999px}
+  @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+  .page.active { animation: fadeIn 0.3s ease; }
+  .info-field { padding:12px 16px;border-radius:12px;background:#eff4ff;border:1px solid #c6c5d2;display:flex;align-items:center;gap:12px; }
+
+  /* BRAND LOGO PILL */
+  .brand-pill {
+    display:inline-flex;align-items:center;gap:8px;
+    background:linear-gradient(135deg,#4b5a9c,#7986cb);
+    color:white;padding:6px 14px;border-radius:999px;
+    font-family:'Fredoka',sans-serif;font-size:20px;font-weight:700;
+    letter-spacing:0.02em;box-shadow:0 4px 16px rgba(75,90,156,0.3);
+  }
+  .brand-pill .dot { width:8px;height:8px;border-radius:50%;background:#a5b4fc; }
+
+  /* NAV AVATAR BUTTON */
+  .nav-avatar-btn {
+    width:38px;height:38px;border-radius:999px;overflow:hidden;
+    border:2.5px solid #a5b4fc;cursor:pointer;
+    transition:all 0.2s;box-shadow:0 2px 8px rgba(75,90,156,0.2);
+  }
+  .nav-avatar-btn:hover { transform:scale(1.08);border-color:#4b5a9c; }
+  .nav-avatar-btn img { width:100%;height:100%;object-fit:cover; }
+
+  /* PROFILE PANEL OVERLAY */
+  #profile-panel-overlay {
+    position:fixed;inset:0;z-index:600;background:rgba(0,0,0,0.35);backdrop-filter:blur(4px);
+    display:none;align-items:flex-start;justify-content:flex-end;padding:72px 16px 16px;
+  }
+  #profile-panel-overlay.open { display:flex; }
+  #profile-panel {
+    background:white;border-radius:20px;padding:0;
+    width:100%;max-width:460px;max-height:85vh;overflow-y:auto;
+    box-shadow:0 24px 64px rgba(0,0,0,0.18);
+    animation: slideInRight 0.35s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes slideInRight { from{opacity:0;transform:translateX(40px)} to{opacity:1;transform:translateX(0)} }
+
+  /* FORO CARDS */
+  .foro-card { display:flex;align-items:center;gap:14px;padding:14px;border-radius:14px;background:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.7);cursor:pointer;transition:all 0.2s; }
+  .foro-card:hover { background:rgba(255,255,255,0.9);transform:translateX(4px);box-shadow:0 4px 16px rgba(75,90,156,0.1); }
+  .mentor-card { display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;background:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.7);cursor:pointer;transition:all 0.2s; }
+  .mentor-card:hover { background:rgba(255,255,255,0.9);transform:translateY(-2px);box-shadow:0 4px 16px rgba(75,90,156,0.1); }
+  .mentor-avatar { width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid #a5b4fc; }
+
+  /* FOOTER STYLES */
+  .footer-link { color:#5f5a7c;font-size:13px;font-weight:600;text-decoration:none;transition:color 0.2s; }
+  .footer-link:hover { color:#4b5a9c; }
+  .footer-quick-link { display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;background:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.7);color:#454650;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;text-decoration:none; }
+  .footer-quick-link:hover { background:rgba(75,90,156,0.08);border-color:#a5b4fc;color:#4b5a9c;transform:translateY(-2px); }
+
+  /* MOTIVATIONAL QUOTE */
+  .quote-italic { font-style:italic;font-family:'Quicksand',sans-serif;color:#5f5a7c;font-size:14px;line-height:1.6; }
+
+  /* PENDING ITEMS */
+  .pending-item { display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,0.5);font-size:13px;font-weight:700;color:#0b1c30; }
+  .pending-dot { width:8px;height:8px;border-radius:50%;flex-shrink:0; }
+</style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col">
+
+<!-- TOAST -->
+<div id="toast">
+  <span class="material-symbols-outlined" style="font-size:18px">check_circle</span>
+  <span id="toast-msg">Acción completada</span>
+</div>
+
+<!-- ══ MODALS ══ -->
+<div class="modal-overlay" id="modal-justificar">
+  <div class="modal">
+    <h3 class="text-2xl text-primary mb-2" style="font-family:'Fredoka',sans-serif">Justificar Inasistencia</h3>
+    <p class="text-on-surface-variant text-sm mb-5">Completa el formulario para justificar tu falta. Tienes 48 horas desde la inasistencia.</p>
+    <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Curso</label>
+    <select class="w-full p-3 rounded-xl border border-outline-variant bg-surface-container-low font-body text-sm mb-3 outline-none" style="font-family:'Quicksand',sans-serif">
+      <option>Estructuras de Datos</option><option>Cálculo IV</option><option>Física II</option><option>Inglés Técnico II</option>
+    </select>
+    <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Motivo</label>
+    <textarea class="w-full p-3 rounded-xl border border-outline-variant bg-surface-container-low font-body text-sm mb-4 outline-none resize-y min-h-20" placeholder="Describe brevemente el motivo..." style="font-family:'Quicksand',sans-serif"></textarea>
+    <div class="flex gap-3">
+      <button class="flex-1 py-2.5 rounded-xl border border-outline-variant text-on-surface-variant text-sm font-bold hover:bg-surface-container-low transition-all" style="font-family:'Quicksand',sans-serif" onclick="closeModal('modal-justificar')">Cancelar</button>
+      <button class="flex-1 py-2.5 rounded-xl bg-primary text-on-primary text-sm font-bold hover:-translate-y-0.5 hover:shadow-lg transition-all" style="font-family:'Quicksand',sans-serif" onclick="submitJustificacion()">Enviar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-nota">
+  <div class="modal">
+    <h3 class="text-2xl text-primary mb-2" style="font-family:'Fredoka',sans-serif">Nueva Nota</h3>
+    <p class="text-on-surface-variant text-sm mb-4">Añade una nota rápida a tu dashboard.</p>
+    <input class="w-full p-3 rounded-xl border border-outline-variant bg-surface-container-low text-sm mb-3 outline-none focus:border-primary transition-colors" placeholder="Título..." style="font-family:'Quicksand',sans-serif"/>
+    <textarea class="w-full p-3 rounded-xl border border-outline-variant bg-surface-container-low text-sm mb-4 outline-none resize-y min-h-20 focus:border-primary transition-colors" placeholder="Escribe tu nota..." style="font-family:'Quicksand',sans-serif"></textarea>
+    <div class="flex gap-3">
+      <button class="flex-1 py-2.5 rounded-xl border border-outline-variant text-on-surface-variant text-sm font-bold hover:bg-surface-container-low transition-all" style="font-family:'Quicksand',sans-serif" onclick="closeModal('modal-nota')">Cancelar</button>
+      <button class="flex-1 py-2.5 rounded-xl bg-primary text-on-primary text-sm font-bold hover:-translate-y-0.5 hover:shadow-lg transition-all" style="font-family:'Quicksand',sans-serif" onclick="submitNota()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-meta">
+  <div class="modal">
+    <h3 class="text-2xl text-primary mb-2" style="font-family:'Fredoka',sans-serif">Agregar Meta Semanal</h3>
+    <p class="text-on-surface-variant text-sm mb-4">Define una meta académica para esta semana.</p>
+    <input class="w-full p-3 rounded-xl border border-outline-variant bg-surface-container-low text-sm mb-4 outline-none focus:border-primary transition-colors" placeholder="Ej: Completar 3 tareas de Cálculo..." style="font-family:'Quicksand',sans-serif"/>
+    <div class="flex gap-3">
+      <button class="flex-1 py-2.5 rounded-xl border border-outline-variant text-on-surface-variant text-sm font-bold" style="font-family:'Quicksand',sans-serif" onclick="closeModal('modal-meta')">Cancelar</button>
+      <button class="flex-1 py-2.5 rounded-xl bg-primary text-on-primary text-sm font-bold" style="font-family:'Quicksand',sans-serif" onclick="submitMeta()">Agregar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-chat">
+  <div class="modal" style="max-width:500px">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="bg-primary-fixed p-2.5 rounded-xl"><span class="material-symbols-outlined text-primary" style="font-size:22px">psychology</span></div>
+      <div>
+        <h3 class="text-xl text-primary" style="font-family:'Fredoka',sans-serif;margin:0">Asistencia Psicológica IA</h3>
+        <p class="text-xs text-on-surface-variant" style="margin:0">Confidencial • Disponible 24/7</p>
+      </div>
+    </div>
+    <div id="chat-messages">
+      <div class="chat-msg bot">¡Hola! 👋 Soy tu asistente de apoyo. ¿Cómo te sientes hoy?</div>
+    </div>
+    <div class="flex gap-2.5 mt-3">
+      <input id="chat-input" class="flex-1 px-3.5 py-2.5 rounded-xl border border-outline-variant bg-surface-container-low text-sm outline-none focus:border-primary transition-colors" placeholder="Escribe tu mensaje..." style="font-family:'Quicksand',sans-serif" onkeydown="if(event.key==='Enter')sendChat()"/>
+      <button class="px-4 py-2.5 rounded-xl bg-primary text-on-primary flex items-center" onclick="sendChat()">
+        <span class="material-symbols-outlined" style="font-size:18px">send</span>
+      </button>
+    </div>
+    <button class="w-full mt-3 py-2.5 rounded-xl border border-outline-variant text-on-surface-variant text-sm font-bold" style="font-family:'Quicksand',sans-serif" onclick="closeModal('modal-chat')">Cerrar</button>
+  </div>
+</div>
+
+<!-- ══ PROFILE PANEL ══ -->
+<div id="profile-panel-overlay" onclick="closePanelIfBg(event)">
+  <div id="profile-panel">
+    <!-- Panel header -->
+    <div style="background:linear-gradient(135deg,#4b5a9c,#7986cb);padding:28px 24px 20px;border-radius:20px 20px 0 0;">
+      <div class="flex justify-between items-start mb-4">
+        <span class="text-white text-lg font-bold" style="font-family:'Fredoka',sans-serif">Mi Perfil</span>
+        <button onclick="closeProfilePanel()" style="background:rgba(255,255,255,0.2);border:none;color:white;border-radius:50%;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;">✕</button>
+      </div>
+      <div class="flex items-center gap-4">
+        <div class="avatar-upload-wrap" style="width:80px;height:80px;margin:0" onclick="document.getElementById('avatar-file-input').click()">
+          <img id="perfil-foto" src="https://ui-avatars.com/api/?name=Usuario&background=4b5a9c&color=fff" alt="Perfil" style="width:80px;height:80px;border-radius:999px;object-fit:cover;border:3px solid rgba(255,255,255,0.7)"/>
+          <div class="avatar-overlay" style="border-radius:999px;background:rgba(0,0,0,0.4)"><span class="material-symbols-outlined" style="color:white;font-size:22px">photo_camera</span></div>
+          <div style="position:absolute;bottom:2px;right:2px;background:#4b5a9c;padding:4px;border-radius:999px;border:2px solid white"><span class="material-symbols-outlined" style="color:white;font-size:12px">verified_user</span></div>
+        </div>
+        <div>
+          <div id="perfil-nombre" class="text-white font-bold text-xl" style="font-family:'Fredoka',sans-serif">Usuario</div>
+          <div id="perfil-email" class="text-white/70 text-xs mb-1"></div>
+          <span id="perfil-role-badge" class="px-3 py-1 bg-white/20 text-white text-xs font-bold rounded-full">Estudiante Universitario</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="padding:20px 24px;">
+      <!-- Stats -->
+      <div class="grid grid-cols-2 gap-3 mb-4">
+        <div class="glass-card p-4 rounded-xl text-center"><div id="perfil-promedio-stat" class="font-bold text-primary leading-none" style="font-family:'Fredoka',sans-serif;font-size:32px">—</div><div class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mt-1">Promedio</div></div>
+        <div class="glass-card p-4 rounded-xl text-center"><div class="font-bold text-primary leading-none" style="font-family:'Fredoka',sans-serif;font-size:32px">142</div><div class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mt-1">Créditos</div></div>
+      </div>
+
+      <!-- Score -->
+      <div class="glass-card p-5 rounded-xl mb-4" style="border-left:4px solid #4b5a9c">
+        <h4 class="flex items-center gap-2 mb-3" style="font-family:'Fredoka',sans-serif;font-size:16px"><span class="material-symbols-outlined text-primary">analytics</span>Score de Permanencia</h4>
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-primary font-bold text-sm">Alta probabilidad</span>
+          <span class="text-primary font-bold" style="font-family:'Fredoka',sans-serif;font-size:20px">85%</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:85%"></div></div>
+      </div>
+
+      <!-- Perfil estudiantil -->
+      <div class="glass-card p-5 rounded-xl mb-4">
+        <h4 class="flex items-center gap-2 mb-3" style="font-family:'Fredoka',sans-serif;font-size:16px"><span class="material-symbols-outlined text-secondary">school</span>Perfil Estudiantil</h4>
+        <div class="grid grid-cols-2 gap-3 mb-3">
+          <div>
+            <div class="text-xs font-bold text-outline uppercase tracking-wider mb-1">Ciclo</div>
+            <select id="perfil-ciclo" class="select-field-inline" onchange="guardarPerfilEstudiantil()">
+              <option value="">Sin especificar</option>
+              <option value="I">I Ciclo</option><option value="II">II Ciclo</option>
+              <option value="III">III Ciclo</option><option value="IV">IV Ciclo</option>
+              <option value="V">V Ciclo</option><option value="VI">VI Ciclo</option>
+              <option value="VII">VII Ciclo</option><option value="VIII">VIII Ciclo</option>
+              <option value="IX">IX Ciclo</option><option value="X">X Ciclo</option>
+            </select>
+          </div>
+          <div>
+            <div class="text-xs font-bold text-outline uppercase tracking-wider mb-1">Carrera</div>
+            <select id="perfil-carrera" class="select-field-inline" onchange="onCarreraChange()">
+              <option value="">Sin especificar</option>
+              <option value="Ingeniería de Sistemas">Ing. de Sistemas</option>
+              <option value="Ingeniería Civil">Ing. Civil</option>
+              <option value="Ingeniería Industrial">Ing. Industrial</option>
+              <option value="Ingeniería Electrónica">Ing. Electrónica</option>
+              <option value="Ingeniería Ambiental">Ing. Ambiental</option>
+              <option value="Administración">Administración</option>
+              <option value="Contabilidad">Contabilidad</option>
+              <option value="Derecho">Derecho</option>
+              <option value="Medicina">Medicina</option>
+              <option value="Psicología">Psicología</option>
+              <option value="Arquitectura">Arquitectura</option>
+              <option value="Educación">Educación</option>
+              <option value="Economía">Economía</option>
+              <option value="Comunicaciones">Comunicaciones</option>
+              <option value="Otra">Otra carrera</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><div class="text-xs font-bold text-outline mb-1">Ciclo</div><div class="info-field"><span class="material-symbols-outlined text-primary/60" style="font-size:16px">school</span><span id="info-ciclo" class="text-sm font-bold">Sin especificar</span></div></div>
+          <div><div class="text-xs font-bold text-outline mb-1">Carrera</div><div class="info-field"><span class="material-symbols-outlined text-primary/60" style="font-size:16px">engineering</span><span id="info-carrera" class="text-sm font-bold">Sin especificar</span></div></div>
+        </div>
+      </div>
+
+      <!-- IA prefs -->
+      <div class="glass-card p-5 rounded-xl mb-4">
+        <h4 class="flex items-center gap-2 mb-3" style="font-family:'Fredoka',sans-serif;font-size:16px"><span class="material-symbols-outlined text-primary">psychology</span>Preferencias de la IA</h4>
+        <div class="grid grid-cols-3 gap-2">
+          <button class="tone-btn active" onclick="selectTone(this)"><span class="material-symbols-outlined" style="font-size:20px">bolt</span>Motivador</button>
+          <button class="tone-btn" onclick="selectTone(this)"><span class="material-symbols-outlined" style="font-size:20px">directions_run</span>Directo</button>
+          <button class="tone-btn" onclick="selectTone(this)"><span class="material-symbols-outlined" style="font-size:20px">favorite</span>Empático</button>
+        </div>
+      </div>
+
+      <!-- Logros -->
+      <div class="glass-card p-5 rounded-xl mb-4">
+        <h4 class="flex items-center gap-2 mb-3" style="font-family:'Fredoka',sans-serif;font-size:16px"><span class="material-symbols-outlined text-primary">military_tech</span>Logros</h4>
+        <div class="grid grid-cols-3 gap-2">
+          <div class="flex flex-col items-center p-3 bg-surface-container-low rounded-xl border border-outline-variant text-center cursor-pointer hover:border-primary transition-all" onclick="showToast('¡100% asistencia! 🏆','event_available')">
+            <span class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1;font-size:24px">event_available</span>
+            <span class="text-xs font-bold mt-1 leading-tight">100% asist.</span>
+          </div>
+          <div class="flex flex-col items-center p-3 bg-surface-container-low rounded-xl border border-outline-variant text-center cursor-pointer hover:border-primary transition-all" onclick="showToast('¡Top 10%! 🌟','workspace_premium')">
+            <span class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1;font-size:24px">workspace_premium</span>
+            <span class="text-xs font-bold mt-1 leading-tight">Top 10%</span>
+          </div>
+          <div class="flex flex-col items-center p-3 bg-surface-container-low rounded-xl border border-outline-variant text-center cursor-pointer hover:border-primary transition-all" onclick="showToast('¡Meta cumplida! 🎯','task_alt')">
+            <span class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1;font-size:24px">task_alt</span>
+            <span class="text-xs font-bold mt-1 leading-tight">Meta semanal</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-3">
+        <button class="flex-1 py-2.5 rounded-xl border border-outline-variant text-on-surface-variant text-sm font-bold hover:bg-surface-container-low transition-all flex items-center justify-center gap-2" style="font-family:'Quicksand',sans-serif" onclick="showToast('Restableciendo contraseña...','lock_reset')">
+          <span class="material-symbols-outlined" style="font-size:16px">lock_reset</span> Cambiar Contraseña
+        </button>
+        <button class="flex-1 py-2.5 rounded-xl bg-error-container text-on-error-container text-sm font-bold hover:opacity-90 transition-all flex items-center justify-center gap-2" style="font-family:'Quicksand',sans-serif" onclick="confirmLogout()">
+          <span class="material-symbols-outlined" style="font-size:16px">logout</span> Cerrar sesión
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="avatar-file-input" accept="image/*" onchange="handleAvatarUpload(this)"/>
+
+<!-- ══ NAVBAR ══ -->
+<nav class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl border-b border-outline-variant/20 shadow-sm h-16">
+  <div class="flex justify-between items-center px-6 h-full max-w-6xl mx-auto">
+    <!-- BRAND -->
+    <div class="brand-pill">
+      <div class="dot"></div>
+      Reten IA
+    </div>
+    <div class="hidden md:flex items-center gap-1">
+      <button class="nav-link active" onclick="showPage('inicio')">Inicio</button>
+      <button class="nav-link" onclick="showPage('alertas')">Alertas</button>
+      <button class="nav-link" onclick="showPage('notas')">Notas</button>
+      <button class="nav-link" onclick="showPage('asistencia')">Asistencia</button>
+      <button class="nav-link" onclick="showPage('apoyo')">Apoyo</button>
+    </div>
+    <div class="flex items-center gap-3">
+      <!-- Avatar → opens profile panel -->
+      <button class="nav-avatar-btn" onclick="openProfilePanel()" title="Ver perfil">
+        <img id="nav-avatar" src="https://ui-avatars.com/api/?name=U&background=4b5a9c&color=fff" alt="Avatar"/>
+      </button>
+      <button class="p-2 rounded-full text-on-surface-variant hover:bg-surface-variant hover:scale-110 transition-all" onclick="showPage('configuracion')">
+        <span class="material-symbols-outlined">settings</span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════
+     PAGE: INICIO
+══════════════════════════════════ -->
+<div class="page active pt-24 pb-12 px-6 max-w-6xl mx-auto w-full" id="page-inicio">
+  <div id="guest-banner-inicio" style="display:none" class="guest-banner">
+    <span class="material-symbols-outlined" style="color:#b45309">person_outline</span>
+    Estás en <strong>modo invitado</strong>. Tus datos no se guardarán.
+    <a class="text-primary font-bold underline cursor-pointer" onclick="window.location.href='index.html'">Iniciar sesión</a>
+  </div>
+
+  <!-- Header -->
+  <header class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div>
+      <!-- Greeting with student emoji -->
+      <h1 id="welcome-title" class="text-primary font-bold leading-tight" style="font-family:'Fredoka',sans-serif;font-size:clamp(36px,6vw,52px)">Hola 👨‍🎓</h1>
+      <div id="perfil-chips" class="mt-2 flex flex-wrap gap-1"></div>
+      <!-- Motivational quote -->
+      <p class="quote-italic mt-3 max-w-xl">"El éxito no es el final, el fracaso no es fatal: es el coraje para continuar lo que cuenta."</p>
+      <!-- AI pending items -->
+      <div id="pending-container" class="mt-3 flex flex-wrap gap-2">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+    <button class="flex items-center gap-2 px-5 py-3 bg-primary text-on-primary rounded-xl text-sm font-bold shadow-lg hover:shadow-primary/25 hover:-translate-y-0.5 transition-all flex-shrink-0" onclick="openModal('modal-nota')">
+      <span class="material-symbols-outlined" style="font-size:18px">add</span> Nueva Nota
+    </button>
+  </header>
+
+  <!-- MOOD STRIP -->
+  <div class="glass-card rounded-xl p-5 mb-5" style="background:linear-gradient(135deg,rgba(165,180,252,0.18),rgba(220,213,253,0.18))">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="bg-white p-2.5 rounded-2xl shadow-sm"><span class="material-symbols-outlined text-primary" style="font-size:22px">auto_awesome</span></div>
+      <div>
+        <div class="font-bold text-on-surface" style="font-family:'Fredoka',sans-serif;font-size:18px">¿Cómo te sientes hoy?</div>
+        <div class="text-on-surface-variant text-sm">Selecciona y ajusta la intensidad de tu emoción.</div>
+      </div>
+    </div>
+    <div class="flex gap-3 flex-wrap justify-center mb-4">
+      <!-- Mood buttons with vivid gradient backgrounds -->
+      <button class="mood-btn" onclick="selectMood(this,'Triste')">
+        <div class="emoji-wrap" style="background:linear-gradient(135deg,#1e3a8a,#3b82f6)">😢</div>
+        <span class="mood-label">Triste</span>
+      </button>
+      <button class="mood-btn" onclick="selectMood(this,'Ansioso')">
+        <div class="emoji-wrap" style="background:linear-gradient(135deg,#7c2d12,#f97316)">😰</div>
+        <span class="mood-label">Ansioso</span>
+      </button>
+      <button class="mood-btn" onclick="selectMood(this,'Normal')">
+        <div class="emoji-wrap" style="background:linear-gradient(135deg,#374151,#9ca3af)">😐</div>
+        <span class="mood-label">Normal</span>
+      </button>
+      <button class="mood-btn" onclick="selectMood(this,'Bien')">
+        <div class="emoji-wrap" style="background:linear-gradient(135deg,#b45309,#fbbf24)">😊</div>
+        <span class="mood-label">Bien</span>
+      </button>
+      <button class="mood-btn" onclick="selectMood(this,'Feliz')">
+        <div class="emoji-wrap" style="background:linear-gradient(135deg,#065f46,#34d399)">😄</div>
+        <span class="mood-label">Feliz</span>
+      </button>
+      <button class="mood-btn" onclick="selectMood(this,'Motivado')">
+        <div class="emoji-wrap" style="background:linear-gradient(135deg,#6b21a8,#c084fc)">🔥</div>
+        <span class="mood-label">Motivado</span>
+      </button>
+      <button class="mood-btn" onclick="selectMood(this,'Genial')">
+        <div class="emoji-wrap" style="background:linear-gradient(135deg,#9f1239,#f43f5e)">🤩</div>
+        <span class="mood-label">Genial</span>
+      </button>
+    </div>
+
+    <!-- Intensity slider (shown after mood selected) -->
+    <div id="mood-intensity-section" style="display:none" class="p-4 rounded-xl bg-white/60 border border-white/70">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-sm font-bold text-on-surface" id="mood-intensity-label">Intensidad: <strong id="mood-name-label">—</strong></span>
+        <span class="text-primary font-bold" style="font-family:'Fredoka',sans-serif;font-size:22px" id="mood-pct">50%</span>
+      </div>
+      <input type="range" id="mood-slider" min="1" max="100" value="50" style="width:100%;accent-color:#4b5a9c;cursor:pointer" oninput="updateMoodIntensity(this.value)"/>
+      <div class="flex justify-between text-xs text-on-surface-variant mt-1 font-semibold"><span>Leve (1%)</span><span>Moderado (50%)</span><span>Intenso (100%)</span></div>
+      <div class="mood-intensity-bar mt-3"><div class="mood-intensity-fill" id="mood-fill" style="width:50%"></div></div>
+    </div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
+    <div class="md:col-span-8 glass-card rounded-xl p-6 relative overflow-hidden">
+      <div class="absolute top-0 right-0 w-48 h-48 bg-primary-container/20 blur-3xl -z-10 rounded-full"></div>
+      <div class="flex items-center justify-between mb-5">
+        <div class="flex items-center gap-2.5">
+          <div class="bg-primary-fixed p-2 rounded-xl"><span class="material-symbols-outlined text-on-primary-fixed-variant">insights</span></div>
+          <h2 class="text-xl text-on-surface" style="font-family:'Fredoka',sans-serif">Resumen de Inteligencia</h2>
+        </div>
+        <span class="px-3 py-1 bg-surface-container-highest text-primary text-xs font-bold rounded-full">Actualizado hace 5m</span>
+      </div>
+      <div class="p-3.5 rounded-xl bg-surface-container-low border border-outline-variant/30 mb-4">
+        <p class="text-sm text-on-surface-variant italic">"Se han identificado patrones de riesgo basados en tus últimas notas del curso con menor desempeño."</p>
+      </div>
+      <div class="grid grid-cols-3 gap-3">
+        <div class="p-3.5 bg-white/40 rounded-xl border border-white/50">
+          <div class="text-xs font-bold text-outline uppercase tracking-wider mb-1.5">Sentimiento</div>
+          <div class="flex items-center gap-1.5 text-primary font-bold text-sm"><span class="material-symbols-outlined" style="font-size:18px">sentiment_satisfied</span> Positivo (82%)</div>
+        </div>
+        <div class="p-3.5 bg-white/40 rounded-xl border border-white/50">
+          <div class="text-xs font-bold text-outline uppercase tracking-wider mb-1.5">Urgencia</div>
+          <div class="flex items-center gap-1.5 text-error font-bold text-sm"><span class="material-symbols-outlined" style="font-size:18px">priority_high</span> 3 Pendientes</div>
+        </div>
+        <div class="p-3.5 bg-white/40 rounded-xl border border-white/50">
+          <div class="text-xs font-bold text-outline uppercase tracking-wider mb-1.5">Promedio IA</div>
+          <div class="flex items-center gap-1.5 text-secondary font-bold text-sm" id="inicio-promedio-ia"><span class="material-symbols-outlined" style="font-size:18px">grade</span> —</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="md:col-span-4 glass-card rounded-xl p-6 flex flex-col items-center text-center">
+      <div class="flex items-center gap-2 mb-5 self-start">
+        <span class="material-symbols-outlined text-primary">target</span>
+        <h3 class="text-xl" style="font-family:'Fredoka',sans-serif">Meta Semanal</h3>
+      </div>
+      <div class="relative w-32 h-32 flex items-center justify-center mb-4">
+        <svg class="w-full h-full -rotate-90" viewBox="0 0 130 130">
+          <circle cx="65" cy="65" r="54" fill="transparent" stroke="rgba(165,180,252,0.25)" stroke-width="10"/>
+          <circle cx="65" cy="65" r="54" fill="transparent" stroke="#4b5a9c" stroke-width="10" stroke-dasharray="339.3" stroke-dashoffset="135.7" stroke-linecap="round"/>
+        </svg>
+        <div class="absolute font-bold text-primary" style="font-family:'Fredoka',sans-serif;font-size:26px">60%</div>
+      </div>
+      <p class="text-sm text-on-surface-variant font-semibold mb-4">Completar 5 notas de apoyo</p>
+      <button class="px-5 py-2 rounded-full bg-primary/10 text-primary border border-primary/20 text-sm font-bold flex items-center gap-1.5 hover:bg-primary/20 transition-all" onclick="openModal('modal-meta')">
+        <span class="material-symbols-outlined" style="font-size:16px">add</span> Agregar Meta
+      </button>
+    </div>
+
+    <div class="md:col-span-4 glass-card rounded-xl p-6">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="material-symbols-outlined text-primary">trending_up</span>
+        <span class="text-xs font-bold text-outline uppercase tracking-wider">Actividad de Notas</span>
+      </div>
+      <div class="flex items-end gap-2 mb-1">
+        <span class="text-4xl font-bold" style="font-family:'Fredoka',sans-serif">458</span>
+        <span class="text-base font-bold text-emerald mb-1">+12%</span>
+      </div>
+      <div class="flex gap-1.5 items-end h-20 mt-4">
+        <div class="flex-1 bg-primary-container/50 rounded-t-lg" style="height:40%"></div>
+        <div class="flex-1 bg-primary-container/50 rounded-t-lg" style="height:60%"></div>
+        <div class="flex-1 bg-primary-container/50 rounded-t-lg" style="height:30%"></div>
+        <div class="flex-1 bg-primary-container/50 rounded-t-lg" style="height:75%"></div>
+        <div class="flex-1 bg-primary rounded-t-lg" style="height:100%;box-shadow:0 0 12px rgba(75,90,156,0.3)"></div>
+        <div class="flex-1 bg-primary-container/50 rounded-t-lg" style="height:50%"></div>
+        <div class="flex-1 bg-primary-container/50 rounded-t-lg" style="height:65%"></div>
+      </div>
+    </div>
+
+    <div class="md:col-span-8 glass-card rounded-xl p-6">
+      <h3 class="text-xl mb-4" style="font-family:'Fredoka',sans-serif">Acciones Rápidas</h3>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="p-3.5 rounded-2xl bg-secondary-container/30 hover:bg-secondary-container/50 border border-secondary-container/50 cursor-pointer flex flex-col items-center gap-2 text-center transition-all group" onclick="showPage('apoyo')">
+          <span class="material-symbols-outlined text-secondary group-hover:scale-110 transition-transform" style="font-size:26px">support_agent</span>
+          <span class="text-xs font-bold text-on-secondary-container">Asistencia</span>
+        </div>
+        <div class="p-3.5 rounded-2xl bg-primary-container/20 hover:bg-primary-container/40 border border-primary-container/30 cursor-pointer flex flex-col items-center gap-2 text-center transition-all group" onclick="exportPDF()">
+          <span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform" style="font-size:26px">description</span>
+          <span class="text-xs font-bold text-on-primary-container">Exportar PDF</span>
+        </div>
+        <div class="p-3.5 rounded-2xl bg-tertiary-container/20 hover:bg-tertiary-container/40 border border-tertiary-container/30 cursor-pointer flex flex-col items-center gap-2 text-center transition-all group" onclick="showPage('notas')">
+          <span class="material-symbols-outlined text-tertiary group-hover:scale-110 transition-transform" style="font-size:26px">grade</span>
+          <span class="text-xs font-bold text-on-tertiary-container">Mis Materias</span>
+        </div>
+        <div class="p-3.5 rounded-2xl bg-surface-container-highest/40 hover:bg-surface-container-highest/60 border border-outline-variant/30 cursor-pointer flex flex-col items-center gap-2 text-center transition-all group" onclick="showToast('Historial próximamente','history')">
+          <span class="material-symbols-outlined text-on-surface-variant group-hover:scale-110 transition-transform" style="font-size:26px">history</span>
+          <span class="text-xs font-bold text-on-surface-variant">Historial</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     PAGE: ALERTAS
+══════════════════════════════════ -->
+<div class="page pt-24 pb-12 px-6 max-w-6xl mx-auto w-full" id="page-alertas">
+  <div class="flex flex-wrap items-end justify-between gap-4 mb-8">
+    <div>
+      <h1 class="text-primary font-bold" style="font-family:'Fredoka',sans-serif;font-size:clamp(32px,5vw,48px)">Tus Alertas</h1>
+      <p class="text-on-surface-variant text-sm mt-1">Mantente al tanto de tu progreso académico y avisos del sistema.</p>
+    </div>
+    <div class="flex gap-2 flex-wrap">
+      <button class="px-4 py-1.5 bg-primary text-on-primary rounded-full text-xs font-bold border-none" onclick="filterAlerts('todas',this)">Todas</button>
+      <button class="px-4 py-1.5 bg-white/70 text-on-surface-variant rounded-full text-xs font-bold border border-outline-variant" onclick="filterAlerts('urgentes',this)">Urgentes</button>
+      <button class="px-4 py-1.5 bg-white/70 text-on-surface-variant rounded-full text-xs font-bold border border-outline-variant" onclick="filterAlerts('academicas',this)">Académicas</button>
+      <button class="px-4 py-1.5 bg-white/70 text-on-surface-variant rounded-full text-xs font-bold border border-outline-variant" onclick="filterAlerts('sistema',this)">Sistema</button>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-5 items-start">
+    <div class="md:col-span-2 flex flex-col gap-4">
+      <div class="alert-card glass-card" data-type="urgentes" style="border-left:4px solid #ba1a1a">
+        <div class="p-3 rounded-xl bg-red-50 flex-shrink-0"><span class="material-symbols-outlined text-error" style="font-size:28px;font-variation-settings:'FILL' 1">event_busy</span></div>
+        <div class="flex-1">
+          <div class="flex justify-between items-start mb-1.5">
+            <h3 class="text-lg" style="font-family:'Fredoka',sans-serif">Alerta de Inasistencia Consecutiva</h3>
+            <span class="px-2 py-0.5 bg-error-container text-error text-xs font-bold rounded-full">URGENTE</span>
+          </div>
+          <p class="text-sm text-on-surface-variant mb-3">Has registrado <strong>3 inasistencias consecutivas</strong>. Esto está impactando negativamente tu puntaje.</p>
+          <div class="flex gap-2">
+            <button class="px-4 py-2 bg-primary text-on-primary text-xs font-bold rounded-xl hover:-translate-y-0.5 transition-all" onclick="openModal('modal-justificar')">Justificar falta</button>
+            <button class="px-4 py-2 border border-outline-variant text-on-surface-variant text-xs font-bold rounded-xl hover:bg-surface-container-low transition-all" onclick="dismissAlert(this)">Ignorar</button>
+          </div>
+        </div>
+      </div>
+      <div class="alert-card glass-card" data-type="academicas">
+        <div class="p-3 rounded-xl bg-primary-fixed flex-shrink-0"><span class="material-symbols-outlined text-primary" style="font-size:28px">trending_down</span></div>
+        <div class="flex-1">
+          <div class="flex justify-between items-start mb-1.5">
+            <h3 class="text-lg" style="font-family:'Fredoka',sans-serif">Alerta de Rendimiento Académico</h3>
+            <span class="text-xs text-on-surface-variant">Hace 3 horas</span>
+          </div>
+          <p class="text-sm text-on-surface-variant mb-3">Se detectó una <strong>calificación baja</strong> en tu examen parcial de Estructuras de Datos.</p>
+          <div class="flex gap-2">
+            <button class="px-4 py-2 bg-primary text-on-primary text-xs font-bold rounded-xl hover:-translate-y-0.5 transition-all" onclick="showPage('notas')">Ver materias</button>
+            <button class="px-4 py-2 border border-outline-variant text-on-surface-variant text-xs font-bold rounded-xl" onclick="dismissAlert(this)">Ignorar</button>
+          </div>
+        </div>
+      </div>
+      <div class="alert-card glass-card" data-type="sistema">
+        <div class="p-3 rounded-xl bg-tertiary-fixed flex-shrink-0"><span class="material-symbols-outlined text-tertiary" style="font-size:28px">timer_off</span></div>
+        <div class="flex-1">
+          <div class="flex justify-between items-start mb-1.5">
+            <h3 class="text-lg" style="font-family:'Fredoka',sans-serif">Alerta de Desconexión</h3>
+            <span class="text-xs text-on-surface-variant">Sistema</span>
+          </div>
+          <p class="text-sm text-on-surface-variant mb-3">No has iniciado sesión en las últimas <strong>48 horas</strong>. Revisa el material nuevo.</p>
+          <button class="px-4 py-2 border border-outline-variant text-on-surface-variant text-xs font-bold rounded-xl" onclick="dismissAlert(this)">Entendido</button>
+        </div>
+      </div>
+      <div>
+        <h2 class="text-xl mb-3" style="font-family:'Fredoka',sans-serif">Opciones Sugeridas</h2>
+        <div class="grid grid-cols-2 gap-3">
+          <button class="glass-card p-4 rounded-xl flex flex-col items-center gap-2 text-sm font-bold text-on-surface-variant hover:-translate-y-1 transition-all cursor-pointer border-none" onclick="showPage('apoyo')">
+            <span class="material-symbols-outlined text-primary" style="font-size:24px">menu_book</span> Revisar material de apoyo
+          </button>
+          <button class="glass-card p-4 rounded-xl flex flex-col items-center gap-2 text-sm font-bold text-on-surface-variant hover:-translate-y-1 transition-all cursor-pointer border-none" onclick="showPage('notas')">
+            <span class="material-symbols-outlined text-primary" style="font-size:24px">grade</span> Ver mis materias y notas
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-4">
+      <div class="glass-card rounded-xl p-6 text-center">
+        <h3 class="text-2xl mb-6" style="font-family:'Fredoka',sans-serif">Resumen de Riesgo</h3>
+        <div class="relative w-48 h-48 mx-auto mb-5 flex items-center justify-center">
+          <svg class="w-full h-full -rotate-90" viewBox="0 0 200 200">
+            <circle cx="100" cy="100" r="85" fill="transparent" stroke="rgba(186,26,26,0.12)" stroke-width="16"/>
+            <circle cx="100" cy="100" r="85" fill="transparent" stroke="#ba1a1a" stroke-width="16" stroke-dasharray="534" stroke-dashoffset="133.5" stroke-linecap="round"/>
+          </svg>
+          <div class="absolute text-center">
+            <div class="font-bold text-error" style="font-family:'Fredoka',sans-serif;font-size:48px;line-height:1">75%</div>
+            <div class="text-xs font-bold text-secondary uppercase tracking-widest">Nivel Crítico</div>
+          </div>
+        </div>
+        <p class="text-sm text-on-surface-variant mb-5">El sistema detecta un riesgo elevado de deserción en el bloque actual.</p>
+        <button class="w-full py-3 rounded-xl text-on-primary text-sm font-bold flex items-center justify-center gap-2" style="background:linear-gradient(135deg,#4b5a9c,#5f5a7c)" onclick="openModal('modal-chat')">
+          <span class="material-symbols-outlined" style="font-size:18px;font-variation-settings:'FILL' 1">smart_toy</span> Solicitar Apoyo IA
+        </button>
+      </div>
+      <div class="glass-card rounded-xl p-5">
+        <h4 class="text-xs font-bold text-secondary uppercase tracking-widest mb-3">Próximos Pasos</h4>
+        <ul class="flex flex-col gap-3">
+          <li class="flex items-center gap-2.5 text-sm text-on-surface-variant"><span class="material-symbols-outlined text-primary">check_circle</span>Realizar cuestionario de repaso</li>
+          <li class="flex items-center gap-2.5 text-sm text-on-surface-variant"><span class="material-symbols-outlined text-primary">check_circle</span>Completar el foro de bienvenida</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     PAGE: NOTAS Y MATERIAS
+══════════════════════════════════ -->
+<div class="page pt-24 pb-12 px-6 max-w-6xl mx-auto w-full" id="page-notas">
+  <div class="flex flex-wrap items-end justify-between gap-4 mb-8">
+    <div>
+      <h1 class="text-primary font-bold" style="font-family:'Fredoka',sans-serif;font-size:clamp(32px,5vw,48px)">Portal de Notas</h1>
+      <p class="text-on-surface-variant text-sm mt-1">Ciclo Académico 2026-1 — Cursos cargados según tu carrera registrada.</p>
+    </div>
+    <div class="flex gap-2 items-center flex-wrap">
+      <span id="carrera-badge-notas" class="hidden px-3 py-1.5 bg-secondary-container text-on-secondary-container text-xs font-bold rounded-full items-center gap-1.5"></span>
+      <button class="flex items-center gap-1.5 px-4 py-2.5 bg-primary text-on-primary rounded-xl text-sm font-bold hover:-translate-y-0.5 transition-all" onclick="agregarMateria()">
+        <span class="material-symbols-outlined" style="font-size:17px">add</span> Agregar Materia
+      </button>
+      <button class="flex items-center gap-1.5 px-4 py-2.5 border border-outline-variant text-on-surface-variant rounded-xl text-sm font-bold hover:bg-surface-container-low transition-all" onclick="resetMaterias()">
+        <span class="material-symbols-outlined" style="font-size:17px">refresh</span> Reiniciar
+      </button>
+    </div>
+  </div>
+
+  <div class="promedio-banner">
+    <div>
+      <div class="text-xs font-bold uppercase tracking-widest opacity-80">Promedio General</div>
+      <div id="promedio-display" class="font-bold leading-none" style="font-family:'Fredoka',sans-serif;font-size:52px;letter-spacing:-1px">—</div>
+    </div>
+    <div class="flex gap-6 flex-wrap">
+      <div class="text-center"><div id="count-aprobadas" class="font-bold leading-none" style="font-family:'Fredoka',sans-serif;font-size:28px">0</div><div class="text-xs opacity-80 font-bold uppercase tracking-wider mt-1">Aprobadas</div></div>
+      <div class="text-center"><div id="count-desaprobadas" class="font-bold leading-none" style="font-family:'Fredoka',sans-serif;font-size:28px">0</div><div class="text-xs opacity-80 font-bold uppercase tracking-wider mt-1">Desaprobadas</div></div>
+      <div class="text-center"><div id="count-pendientes" class="font-bold leading-none" style="font-family:'Fredoka',sans-serif;font-size:28px">0</div><div class="text-xs opacity-80 font-bold uppercase tracking-wider mt-1">Pendientes</div></div>
+    </div>
+    <div class="text-xs opacity-75 flex items-center gap-1.5"><span class="material-symbols-outlined" style="font-size:16px">info</span>Haz clic en el nombre para editarlo</div>
+  </div>
+
+  <div class="glass-card rounded-xl p-6 overflow-x-auto">
+    <table class="materias-table" id="materias-table">
+      <thead><tr>
+        <th style="width:36px">#</th><th>Materia</th>
+        <th style="width:110px;text-align:center">Nota</th>
+        <th style="width:130px;text-align:center">Mín. Aprobatorio</th>
+        <th style="width:130px;text-align:center">Estado</th>
+        <th style="width:44px"></th>
+      </tr></thead>
+      <tbody id="materias-tbody"></tbody>
+    </table>
+    <button class="add-materia-btn" onclick="agregarMateria()"><span class="material-symbols-outlined" style="font-size:18px">add_circle</span>Agregar nueva materia</button>
+  </div>
+  <div class="flex gap-4 mt-4 flex-wrap">
+    <div class="flex items-center gap-2 text-sm text-on-surface-variant"><div class="w-3 h-3 rounded" style="background:#059669"></div>Borde verde = aprobado</div>
+    <div class="flex items-center gap-2 text-sm text-on-surface-variant"><div class="w-3 h-3 rounded" style="background:#ba1a1a"></div>Borde rojo = desaprobado</div>
+    <div class="flex items-center gap-2 text-sm text-on-surface-variant"><div class="w-3 h-3 rounded" style="background:#a5b4fc"></div>Borde azul = pendiente</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     PAGE: ASISTENCIA
+══════════════════════════════════ -->
+<div class="page pt-24 pb-12 px-6 max-w-6xl mx-auto w-full" id="page-asistencia">
+  <div class="flex flex-wrap items-end justify-between gap-4 mb-8">
+    <div>
+      <h1 class="text-primary font-bold" style="font-family:'Fredoka',sans-serif;font-size:clamp(32px,5vw,48px)">Control de Asistencia</h1>
+      <p class="text-on-surface-variant text-sm mt-1">Ciclo Académico 2026-1</p>
+    </div>
+    <div class="glass-card px-5 py-4 rounded-xl flex gap-5 items-center">
+      <div class="text-center"><div class="text-xs font-bold text-on-surface-variant uppercase">Asistencias</div><div class="font-bold text-emerald" style="font-family:'Fredoka',sans-serif;font-size:28px">124</div></div>
+      <div class="w-px h-9 bg-outline-variant"></div>
+      <div class="text-center"><div class="text-xs font-bold text-on-surface-variant uppercase">Inasistencias</div><div class="font-bold" style="font-family:'Fredoka',sans-serif;font-size:28px;color:#be123c">4</div></div>
+      <div class="w-px h-9 bg-outline-variant"></div>
+      <div class="text-center"><div class="text-xs font-bold text-on-surface-variant uppercase">Tardanzas</div><div class="font-bold" style="font-family:'Fredoka',sans-serif;font-size:28px;color:#b45309">6</div></div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-5 items-start">
+    <div class="md:col-span-2 flex flex-col gap-5">
+      <div class="glass-card rounded-xl p-6">
+        <div class="flex justify-between items-center mb-5">
+          <h3 class="text-xl flex items-center gap-2" style="font-family:'Fredoka',sans-serif"><span class="material-symbols-outlined text-primary">calendar_month</span> Registro Mensual</h3>
+          <div class="flex items-center gap-2">
+            <button class="p-1.5 rounded-full border-none bg-none text-on-surface-variant cursor-pointer hover:bg-surface-variant transition-all"><span class="material-symbols-outlined">chevron_left</span></button>
+            <span class="font-bold">Mayo 2026</span>
+            <button class="p-1.5 rounded-full border-none bg-none text-on-surface-variant cursor-pointer hover:bg-surface-variant transition-all"><span class="material-symbols-outlined">chevron_right</span></button>
+          </div>
+        </div>
+        <div class="grid gap-2 mb-4" style="grid-template-columns:repeat(7,1fr)">
+          <div class="text-center text-xs font-bold text-outline pb-1">LUN</div><div class="text-center text-xs font-bold text-outline pb-1">MAR</div><div class="text-center text-xs font-bold text-outline pb-1">MIÉ</div><div class="text-center text-xs font-bold text-outline pb-1">JUE</div><div class="text-center text-xs font-bold text-outline pb-1">VIE</div><div class="text-center text-xs font-bold text-outline pb-1">SAB</div><div class="text-center text-xs font-bold text-outline pb-1">DOM</div>
+          <div class="cal-day empty">28</div><div class="cal-day empty">29</div><div class="cal-day empty">30</div>
+          <div class="cal-day present">1</div><div class="cal-day present">2</div><div class="cal-day future">3</div><div class="cal-day future">4</div>
+          <div class="cal-day present">5</div><div class="cal-day present">6</div><div class="cal-day absent">7</div><div class="cal-day present">8</div><div class="cal-day late today">9</div><div class="cal-day future">10</div><div class="cal-day future">11</div>
+          <div class="cal-day future">12</div><div class="cal-day future">13</div><div class="cal-day future">14</div><div class="cal-day future">15</div><div class="cal-day future">16</div><div class="cal-day future">17</div><div class="cal-day future">18</div>
+          <div class="cal-day future">19</div><div class="cal-day future">20</div><div class="cal-day future">21</div><div class="cal-day future">22</div><div class="cal-day future">23</div><div class="cal-day future">24</div><div class="cal-day future">25</div>
+          <div class="cal-day future">26</div><div class="cal-day future">27</div><div class="cal-day future">28</div><div class="cal-day future">29</div><div class="cal-day future">30</div><div class="cal-day future">31</div>
+        </div>
+        <div class="flex gap-5 pt-3 border-t border-outline-variant/30 flex-wrap">
+          <div class="flex items-center gap-1.5 text-sm"><div class="w-3 h-3 rounded-full bg-emerald"></div>Asistido</div>
+          <div class="flex items-center gap-1.5 text-sm"><div class="w-3 h-3 rounded-full" style="background:#be123c"></div>Inasistencia</div>
+          <div class="flex items-center gap-1.5 text-sm"><div class="w-3 h-3 rounded-full" style="background:#b45309"></div>Tardanza</div>
+        </div>
+      </div>
+
+      <h3 class="text-xl" style="font-family:'Fredoka',sans-serif">Detalle por Asignatura</h3>
+      <div class="grid grid-cols-2 gap-3.5">
+        <div class="glass-card p-5 rounded-xl" style="border-left:4px solid #059669">
+          <div class="flex justify-between items-start mb-3.5"><div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center"><span class="material-symbols-outlined text-primary">code</span></div><div class="text-right"><div class="font-bold text-emerald leading-none" style="font-family:'Fredoka',sans-serif;font-size:32px">95%</div><div class="text-xs font-bold text-on-surface-variant uppercase">Asistencia</div></div></div>
+          <div class="font-bold text-sm">Estructuras de Datos</div>
+          <div class="flex justify-between items-center mt-1"><span class="text-xs text-on-surface-variant">18/20 Sesiones</span><span class="px-2 py-0.5 bg-emerald/10 text-emerald text-xs font-bold rounded-full">Óptimo</span></div>
+        </div>
+        <div class="glass-card p-5 rounded-xl" style="border-left:4px solid #b45309">
+          <div class="flex justify-between items-start mb-3.5"><div class="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center"><span class="material-symbols-outlined text-secondary">calculate</span></div><div class="text-right"><div class="font-bold leading-none" style="font-family:'Fredoka',sans-serif;font-size:32px;color:#b45309">88%</div><div class="text-xs font-bold text-on-surface-variant uppercase">Asistencia</div></div></div>
+          <div class="font-bold text-sm">Cálculo IV</div>
+          <div class="flex justify-between items-center mt-1"><span class="text-xs text-on-surface-variant">14/16 Sesiones</span><span class="px-2 py-0.5 text-xs font-bold rounded-full" style="background:rgba(245,158,11,0.12);color:#b45309">Regular</span></div>
+        </div>
+        <div class="glass-card p-5 rounded-xl" style="border-left:4px solid #be123c">
+          <div class="flex justify-between items-start mb-3.5"><div class="w-10 h-10 rounded-xl bg-error/10 flex items-center justify-center"><span class="material-symbols-outlined text-error">science</span></div><div class="text-right"><div class="font-bold leading-none" style="font-family:'Fredoka',sans-serif;font-size:32px;color:#be123c">75%</div><div class="text-xs font-bold text-on-surface-variant uppercase">Asistencia</div></div></div>
+          <div class="font-bold text-sm">Física II</div>
+          <div class="flex justify-between items-center mt-1"><span class="text-xs text-on-surface-variant">9/12 Sesiones</span><span class="px-2 py-0.5 text-xs font-bold rounded-full" style="background:rgba(244,63,94,0.12);color:#be123c">Riesgo</span></div>
+        </div>
+        <div class="glass-card p-5 rounded-xl" style="border-left:4px solid #059669">
+          <div class="flex justify-between items-start mb-3.5"><div class="w-10 h-10 rounded-xl bg-tertiary/10 flex items-center justify-center"><span class="material-symbols-outlined text-tertiary">translate</span></div><div class="text-right"><div class="font-bold text-emerald leading-none" style="font-family:'Fredoka',sans-serif;font-size:32px">100%</div><div class="text-xs font-bold text-on-surface-variant uppercase">Asistencia</div></div></div>
+          <div class="font-bold text-sm">Inglés Técnico II</div>
+          <div class="flex justify-between items-center mt-1"><span class="text-xs text-on-surface-variant">20/20 Sesiones</span><span class="px-2 py-0.5 bg-emerald/10 text-emerald text-xs font-bold rounded-full">Impecable</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-4">
+      <div class="rounded-2xl p-6 text-white relative overflow-hidden" style="background:#4b5a9c">
+        <h3 class="text-xl mb-3" style="font-family:'Fredoka',sans-serif">Gestión de Faltas</h3>
+        <p class="text-sm opacity-85 mb-5 leading-relaxed">¿Inasistencia por salud o fuerza mayor? Registra tu justificación para evitar penalizaciones.</p>
+        <button class="w-full py-3 rounded-xl bg-white font-bold text-sm flex items-center justify-center gap-2 hover:-translate-y-0.5 transition-all" style="color:#4b5a9c;font-family:'Quicksand',sans-serif" onclick="openModal('modal-justificar')">
+          <span class="material-symbols-outlined" style="color:#4b5a9c">add_circle</span>Justificar Inasistencia
+        </button>
+      </div>
+      <div class="glass-card rounded-xl p-5" style="border-top:4px solid #4b5a9c">
+        <h4 class="flex items-center gap-2 font-bold mb-3.5"><span class="material-symbols-outlined text-primary">info</span>Información Importante</h4>
+        <ul class="flex flex-col gap-3">
+          <li class="flex items-start gap-2 text-sm text-on-surface-variant"><div class="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>Tienes 48 horas para presentar justificaciones.</li>
+          <li class="flex items-start gap-2 text-sm text-on-surface-variant"><div class="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>El límite de inasistencias es del 30% por curso.</li>
+          <li class="flex items-start gap-2 text-sm text-on-surface-variant"><div class="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0"></div>3 tardanzas equivalen a 1 inasistencia injustificada.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     PAGE: APOYO
+══════════════════════════════════ -->
+<div class="page pt-24 pb-12 px-6 max-w-6xl mx-auto w-full" id="page-apoyo">
+  <div class="mb-8"><h1 class="text-primary font-bold" style="font-family:'Fredoka',sans-serif;font-size:clamp(32px,5vw,48px)">Centro de Apoyo</h1></div>
+
+  <!-- Asistencia IA banner -->
+  <div class="glass-card rounded-2xl overflow-hidden mb-6 border-2 border-primary/15">
+    <div class="p-6 flex flex-wrap items-center gap-5 justify-between">
+      <div class="flex items-center gap-4">
+        <div class="bg-primary/10 p-3.5 rounded-full"><span class="material-symbols-outlined text-primary" style="font-size:28px">psychology</span></div>
+        <div>
+          <h2 class="text-xl mb-1" style="font-family:'Fredoka',sans-serif">Asistencia Psicológica por IA</h2>
+          <p class="text-sm text-on-surface-variant max-w-lg">Habla con nuestra IA para escucharte y ofrecerte orientación emocional en cualquier momento.</p>
+        </div>
+      </div>
+      <div class="flex gap-2.5 flex-wrap">
+        <button class="px-5 py-3 bg-primary text-on-primary rounded-full text-sm font-bold flex items-center gap-2 hover:-translate-y-0.5 transition-all" onclick="openModal('modal-chat')">
+          <span class="material-symbols-outlined" style="font-size:18px">chat</span> Iniciar conversación
+        </button>
+        <button class="px-5 py-3 border border-outline-variant text-on-surface-variant rounded-full text-sm font-bold hover:bg-surface-container-low transition-all" onclick="showToast('Más información próximamente','info')">Conocer más</button>
+      </div>
+    </div>
+    <div class="px-6 py-2.5 bg-primary/5 border-t border-primary/10 flex gap-5 flex-wrap">
+      <span class="flex items-center gap-1.5 text-xs text-outline"><span class="material-symbols-outlined" style="font-size:16px">lock</span>Confidencial</span>
+      <span class="flex items-center gap-1.5 text-xs text-outline"><span class="material-symbols-outlined" style="font-size:16px">schedule</span>Disponible 24/7</span>
+      <span class="flex items-center gap-1.5 text-xs text-outline"><span class="material-symbols-outlined" style="font-size:16px">verified_user</span>Entorno seguro</span>
+    </div>
+  </div>
+
+  <!-- FOROS Y MENTORIAS -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    <!-- Foros Activos -->
+    <div class="glass-card rounded-xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl flex items-center gap-2" style="font-family:'Fredoka',sans-serif">
+          <span class="material-symbols-outlined text-primary">forum</span> Foros Activos
+        </h2>
+        <button class="px-3 py-1.5 text-xs font-bold text-primary border border-primary/30 rounded-full hover:bg-primary/10 transition-all" onclick="showToast('Ver todos los foros','forum')">Ver todos</button>
+      </div>
+      <div id="foros-list" class="flex flex-col gap-3">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
+    <!-- Mentorías -->
+    <div class="glass-card rounded-xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl flex items-center gap-2" style="font-family:'Fredoka',sans-serif">
+          <span class="material-symbols-outlined text-secondary">school</span> Mentorías
+        </h2>
+        <button class="p-2 rounded-full border border-outline-variant text-on-surface-variant hover:bg-surface-container-low transition-all" onclick="showToast('Buscar mentor disponible','person_search')">
+          <span class="material-symbols-outlined" style="font-size:18px">person_search</span>
+        </button>
+      </div>
+      <!-- Search -->
+      <div class="relative mb-4">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline" style="font-size:18px">search</span>
+        <input type="text" placeholder="Buscar mentor o materia..." class="w-full pl-9 pr-3 py-2.5 border border-outline-variant rounded-xl bg-surface-container-low text-sm outline-none focus:border-primary transition-colors" style="font-family:'Quicksand',sans-serif"/>
+      </div>
+      <div id="mentorias-list" class="flex flex-col gap-3">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Recursos de Bienestar -->
+  <h2 class="text-xl text-primary mb-4" style="font-family:'Fredoka',sans-serif">Recursos de Bienestar</h2>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="glass-card p-6 rounded-xl text-center">
+      <div class="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-3.5"><span class="material-symbols-outlined text-primary" style="font-size:28px">self_improvement</span></div>
+      <h3 class="text-lg mb-2" style="font-family:'Fredoka',sans-serif">Técnicas de Estudio</h3>
+      <p class="text-sm text-on-surface-variant mb-3.5">Métodos probados para optimizar tu aprendizaje y retención.</p>
+      <button class="w-full py-2 bg-primary text-on-primary rounded-xl text-sm font-bold hover:-translate-y-0.5 transition-all" onclick="showToast('Técnicas de estudio próximamente','menu_book')">Ver guía</button>
+    </div>
+    <div class="glass-card p-6 rounded-xl text-center">
+      <div class="w-14 h-14 bg-secondary/10 rounded-2xl flex items-center justify-center mx-auto mb-3.5"><span class="material-symbols-outlined text-secondary" style="font-size:28px">spa</span></div>
+      <h3 class="text-lg mb-2" style="font-family:'Fredoka',sans-serif">Gestión del Estrés</h3>
+      <p class="text-sm text-on-surface-variant mb-3.5">Herramientas para mantener el equilibrio durante el ciclo académico.</p>
+      <button class="w-full py-2 bg-primary text-on-primary rounded-xl text-sm font-bold hover:-translate-y-0.5 transition-all" onclick="showToast('Gestión del estrés próximamente','spa')">Explorar</button>
+    </div>
+    <div class="glass-card p-6 rounded-xl text-center">
+      <div class="w-14 h-14 bg-tertiary/10 rounded-2xl flex items-center justify-center mx-auto mb-3.5"><span class="material-symbols-outlined text-tertiary" style="font-size:28px">contact_support</span></div>
+      <h3 class="text-lg mb-2" style="font-family:'Fredoka',sans-serif">Orientación Académica</h3>
+      <p class="text-sm text-on-surface-variant mb-3.5">Contacta con un asesor académico para planificar tu carrera.</p>
+      <button class="w-full py-2 bg-primary text-on-primary rounded-xl text-sm font-bold hover:-translate-y-0.5 transition-all" onclick="showToast('Orientación próximamente','contact_support')">Contactar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     PAGE: CONFIGURACIÓN
+══════════════════════════════════ -->
+<div class="page pt-24 pb-12 px-6 max-w-6xl mx-auto w-full" id="page-configuracion">
+  <div class="mb-8">
+    <h1 class="text-primary font-bold" style="font-family:'Fredoka',sans-serif;font-size:clamp(32px,5vw,48px)">Configuración del Sistema</h1>
+    <p class="text-on-surface-variant text-sm mt-1">Administra tus preferencias personales, seguridad y la forma en que la IA interactúa con tu información académica.</p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+    <div class="glass-card p-6 rounded-xl">
+      <h2 class="text-lg flex items-center gap-2 mb-4" style="font-family:'Fredoka',sans-serif"><span class="material-symbols-outlined text-primary">shield</span>Cuenta y Seguridad</h2>
+      <div class="mb-3">
+        <div class="text-xs font-bold text-outline uppercase tracking-wider mb-1.5">Correo Electrónico</div>
+        <div class="info-field relative">
+          <span class="material-symbols-outlined text-primary/60">mail</span>
+          <span id="config-email" class="text-sm font-semibold flex-1">usuario@ejemplo.com</span>
+        </div>
+      </div>
+      <div class="flex items-center justify-between p-3.5 bg-surface-container-low rounded-xl border border-outline-variant">
+        <div>
+          <div class="font-bold text-sm">Verificación en dos pasos</div>
+          <div class="text-xs text-on-surface-variant">Añade seguridad extra a tu cuenta</div>
+        </div>
+        <button class="px-4 py-2 bg-primary text-on-primary text-xs font-bold rounded-xl hover:-translate-y-0.5 transition-all" onclick="showToast('2FA activado ✓','verified_user')">Activar</button>
+      </div>
+    </div>
+
+    <div class="glass-card p-6 rounded-xl">
+      <h2 class="text-lg flex items-center gap-2 mb-4" style="font-family:'Fredoka',sans-serif"><span class="material-symbols-outlined text-primary">palette</span>Apariencia</h2>
+      <div class="mb-4">
+        <div class="text-xs font-bold text-outline uppercase tracking-wider mb-2.5">Modo de Visualización</div>
+        <div class="grid grid-cols-2 gap-3">
+          <button class="p-4 rounded-xl border-2 border-primary bg-primary-fixed flex flex-col items-center gap-2 text-sm font-bold text-primary" onclick="showToast('Modo claro activo','light_mode')">
+            <span class="material-symbols-outlined" style="font-size:22px">light_mode</span>Clara
+          </button>
+          <button class="p-4 rounded-xl border-2 border-outline-variant flex flex-col items-center gap-2 text-sm font-bold text-on-surface-variant hover:border-primary transition-all" onclick="showToast('Modo oscuro próximamente','dark_mode')">
+            <span class="material-symbols-outlined" style="font-size:22px">dark_mode</span>Oscura
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="glass-card p-6 rounded-xl">
+      <h2 class="text-lg flex items-center gap-2 mb-4" style="font-family:'Fredoka',sans-serif"><span class="material-symbols-outlined text-primary">notifications</span>Notificaciones</h2>
+      <div class="flex flex-col gap-3">
+        <div class="flex items-center justify-between py-3 border-b border-outline-variant/30">
+          <div><div class="font-bold text-sm">Alertas de Inasistencia</div><div class="text-xs text-on-surface-variant">Notificar cuando faltes a clase</div></div>
+          <label class="relative inline-flex cursor-pointer"><input type="checkbox" checked class="sr-only peer" onchange="showToast('Preferencia guardada','notifications')"/><div class="w-11 h-6 bg-primary rounded-full" style="position:relative"><div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full" style="transform:translateX(20px)"></div></div></label>
+        </div>
+        <div class="flex items-center justify-between py-3">
+          <div><div class="font-bold text-sm">Rendimiento Académico</div><div class="text-xs text-on-surface-variant">Cambios significativos en calificaciones</div></div>
+          <label class="relative inline-flex cursor-pointer"><input type="checkbox" checked class="sr-only peer" onchange="showToast('Preferencia guardada','notifications')"/><div class="w-11 h-6 bg-primary rounded-full" style="position:relative"><div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full" style="transform:translateX(20px)"></div></div></label>
+        </div>
+      </div>
+    </div>
+
+    <div class="glass-card p-6 rounded-xl">
+      <h2 class="text-lg flex items-center gap-2 mb-4" style="font-family:'Fredoka',sans-serif"><span class="material-symbols-outlined text-primary">privacy_tip</span>Privacidad de la IA</h2>
+      <div class="p-3.5 bg-primary-fixed rounded-xl border border-primary/20 mb-4">
+        <p class="text-sm text-on-primary-fixed italic">"Nuestra IA utiliza tus datos académicos para generar planes de estudio personalizados y detectar riesgos temprano."</p>
+      </div>
+      <div class="flex flex-col gap-3">
+        <label class="flex items-center gap-3 cursor-pointer">
+          <input type="checkbox" checked class="w-4 h-4 accent-primary" onchange="showToast('Preferencia de privacidad guardada','privacy_tip')"/>
+          <div><div class="font-bold text-sm">Uso de datos recomendaciones</div><div class="text-xs text-on-surface-variant">Permite que el algoritmo analice tus patrones</div></div>
+        </label>
+        <label class="flex items-center gap-3 cursor-pointer">
+          <input type="checkbox" checked class="w-4 h-4 accent-primary" onchange="showToast('Preferencia de privacidad guardada','privacy_tip')"/>
+          <div><div class="font-bold text-sm">Anonimización estadística</div><div class="text-xs text-on-surface-variant">Datos usados para mejorar el modelo educativo</div></div>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex justify-end mt-5">
+    <button class="flex items-center gap-2 px-8 py-3.5 bg-primary text-on-primary rounded-xl font-bold text-sm shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all" onclick="showToast('Cambios guardados exitosamente ✓','save')">
+      <span class="material-symbols-outlined" style="font-size:18px">save</span> Guardar Cambios
+    </button>
+  </div>
+</div>
+
+<!-- ══ FOOTER ══ -->
+<footer class="mt-auto border-t border-outline-variant/30" style="background:linear-gradient(to bottom,#f8f9ff,#eff4ff)">
+  <div class="max-w-6xl mx-auto px-6 py-8">
+    <!-- Top section -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+      <!-- Brand -->
+      <div class="md:col-span-1">
+        <div class="brand-pill mb-3" style="font-size:16px;padding:5px 12px">
+          <div class="dot"></div>Reten IA
+        </div>
+        <p class="text-sm text-on-surface-variant leading-relaxed">Plataforma académica inteligente para el éxito estudiantil.</p>
+        <p class="text-xs text-outline mt-2">© 2026. Todos los derechos reservados.</p>
+      </div>
+
+      <!-- Quick nav -->
+      <div>
+        <div class="text-xs font-bold text-outline uppercase tracking-widest mb-3">Navegar</div>
+        <div class="flex flex-col gap-2">
+          <a class="footer-link" onclick="showPage('inicio')">🏠 Inicio</a>
+          <a class="footer-link" onclick="showPage('alertas')">🔔 Alertas</a>
+          <a class="footer-link" onclick="showPage('notas')">📊 Notas</a>
+          <a class="footer-link" onclick="showPage('asistencia')">📅 Asistencia</a>
+        </div>
+      </div>
+
+      <!-- Support -->
+      <div>
+        <div class="text-xs font-bold text-outline uppercase tracking-widest mb-3">Apoyo</div>
+        <div class="flex flex-col gap-2">
+          <a class="footer-link" onclick="showPage('apoyo')">🤝 Centro de Apoyo</a>
+          <a class="footer-link" onclick="openModal('modal-chat')">🧠 IA Psicológica</a>
+          <a class="footer-link" onclick="showPage('configuracion')">⚙️ Configuración</a>
+          <a class="footer-link" onclick="showToast('Soporte 24/7','support_agent')">💬 Soporte</a>
+        </div>
+      </div>
+
+      <!-- Quick actions -->
+      <div>
+        <div class="text-xs font-bold text-outline uppercase tracking-widest mb-3">Acciones Rápidas</div>
+        <div class="flex flex-col gap-2">
+          <a class="footer-quick-link" onclick="openModal('modal-nota')">
+            <span class="material-symbols-outlined text-primary" style="font-size:16px">note_add</span>Nueva nota
+          </a>
+          <a class="footer-quick-link" onclick="openModal('modal-justificar')">
+            <span class="material-symbols-outlined text-secondary" style="font-size:16px">assignment_turned_in</span>Justificar falta
+          </a>
+          <a class="footer-quick-link" onclick="openModal('modal-meta')">
+            <span class="material-symbols-outlined text-tertiary" style="font-size:16px">target</span>Nueva meta
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom bar -->
+    <div class="flex flex-wrap items-center justify-between gap-3 pt-5 border-t border-outline-variant/30">
+      <div class="flex gap-4">
+        <a href="#" class="text-xs text-outline hover:text-primary transition-colors font-semibold" onclick="showToast('Política de privacidad','policy')">Privacidad</a>
+        <a href="#" class="text-xs text-outline hover:text-primary transition-colors font-semibold" onclick="showToast('Términos de uso','gavel')">Términos</a>
+        <a href="#" class="text-xs text-outline hover:text-primary transition-colors font-semibold" onclick="showToast('Soporte 24/7','support_agent')">Soporte</a>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="w-2 h-2 rounded-full bg-emerald" style="animation:pulse 2s infinite"></div>
+        <span class="text-xs text-on-surface-variant font-semibold">Sistema operativo</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ══ FIREBASE ══
+const firebaseConfig = {
+  apiKey: "AIzaSyDP3D7hSwTh2C-mTTVR2K3oekpcZC8rMNo",
+  authDomain: "exp3-fb4e0.firebaseapp.com",
+  projectId: "exp3-fb4e0",
+  storageBucket: "exp3-fb4e0.firebasestorage.app",
+  messagingSenderId: "674918684313",
+  appId: "1:674918684313:web:0ce12129bfd90cae66ca08"
+};
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+let currentUser = null;
+const isGuest = () => sessionStorage.getItem('guestMode') === 'true';
+
+auth.onAuthStateChanged(async user => {
+  if (!user && !isGuest()) { window.location.href = 'index.html'; return; }
+  currentUser = user;
+  if (user && user.isAnonymous) sessionStorage.setItem('guestMode', 'true');
+  if (isGuest()) {
+    setupGuestMode();
+  } else {
+    updateUserUI(user);
+    await loadPerfilEstudiantil(user.uid);
+  }
+  renderMaterias();
+  renderPendingItems();
+});
+
+// ══ GUEST MODE ══
+function setupGuestMode() {
+  const nombre = sessionStorage.getItem('guestNombre') || 'Invitado';
+  const ciclo = sessionStorage.getItem('guestCiclo') || '';
+  const carrera = sessionStorage.getItem('guestCarrera') || '';
+  const banner = document.getElementById('guest-banner-inicio');
+  if (banner) banner.style.display = 'flex';
+  const badge = document.getElementById('perfil-role-badge');
+  if (badge) { badge.textContent = '👤 Modo Invitado'; badge.style.background = 'rgba(245,158,11,0.15)'; badge.style.color = '#b45309'; }
+  updateUserUI({ displayName: nombre, email: 'invitado@fabricio.web', photoURL: null });
+  if (ciclo) { const el = document.getElementById('perfil-ciclo'); if (el) el.value = ciclo; }
+  if (carrera) { const el = document.getElementById('perfil-carrera'); if (el) el.value = carrera; }
+  document.getElementById('info-ciclo').textContent = ciclo ? `${ciclo} Ciclo` : 'Sin especificar';
+  document.getElementById('info-carrera').textContent = carrera || 'Sin especificar';
+  const ce = document.getElementById('config-email');
+  if (ce) ce.textContent = 'invitado@fabricio.web';
+  actualizarChipsInicio(ciclo, carrera);
+  if (carrera) {
+    materiasData = getCarreraMaterias(carrera);
+    renderForosYMentorias(carrera);
+  }
+}
+
+// ══ UI ══
+function updateUserUI(user) {
+  const name = user.displayName || 'Estudiante';
+  const photo = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=4b5a9c&color=fff`;
+  const firstName = name.split(' ')[0];
+  document.getElementById('nav-avatar').src = photo;
+  document.getElementById('welcome-title').textContent = `Hola de nuevo, ${firstName} 👨‍🎓`;
+  document.getElementById('perfil-foto').src = photo;
+  document.getElementById('perfil-nombre').textContent = name;
+  document.getElementById('perfil-email').textContent = user.email || '';
+  const ce = document.getElementById('config-email');
+  if (ce) ce.textContent = user.email || '—';
+}
+
+// ══ AVATAR ══
+function handleAvatarUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (!file.type.startsWith('image/')) { showToast('Selecciona una imagen válida', 'error'); return; }
+  if (file.size > 5 * 1024 * 1024) { showToast('La imagen no debe superar 5 MB', 'warning'); return; }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const dataUrl = e.target.result;
+    document.getElementById('perfil-foto').src = dataUrl;
+    document.getElementById('nav-avatar').src = dataUrl;
+    try { sessionStorage.setItem('customAvatar', dataUrl); } catch(e) {}
+    showToast('Foto de perfil actualizada ✓', 'photo_camera');
+    if (currentUser && !currentUser.isAnonymous) currentUser.updateProfile({ photoURL: dataUrl }).catch(() => {});
+  };
+  reader.readAsDataURL(file);
+}
+
+// ══ PROFILE PANEL ══
+function openProfilePanel() {
+  document.getElementById('profile-panel-overlay').classList.add('open');
+}
+function closeProfilePanel() {
+  document.getElementById('profile-panel-overlay').classList.remove('open');
+}
+function closePanelIfBg(e) {
+  if (e.target === document.getElementById('profile-panel-overlay')) closeProfilePanel();
+}
+
+// ══ PERFIL ESTUDIANTIL ══
+async function loadPerfilEstudiantil(uid) {
+  try {
+    const doc = await db.collection('usuarios').doc(uid).get();
+    if (doc.exists) {
+      const data = doc.data();
+      const ciclo = data.ciclo || ''; const carrera = data.carrera || '';
+      if (ciclo) document.getElementById('perfil-ciclo').value = ciclo;
+      if (carrera) document.getElementById('perfil-carrera').value = carrera;
+      document.getElementById('info-ciclo').textContent = ciclo ? `${ciclo} Ciclo` : 'Sin especificar';
+      document.getElementById('info-carrera').textContent = carrera || 'Sin especificar';
+      actualizarChipsInicio(ciclo, carrera);
+      if (carrera) {
+        materiasData = getCarreraMaterias(carrera);
+        renderForosYMentorias(carrera);
+      }
+      if (data.materias && data.materias.length > 0) materiasData = data.materias;
+      if (data.displayName) {
+        document.getElementById('perfil-nombre').textContent = data.displayName;
+        document.getElementById('welcome-title').textContent = `Hola de nuevo, ${data.displayName.split(' ')[0]} 👨‍🎓`;
+      }
+    }
+  } catch (e) { console.warn('No se pudo cargar el perfil:', e); }
+}
+
+function onCarreraChange() {
+  const carrera = document.getElementById('perfil-carrera').value;
+  if (carrera) {
+    if (confirm(`¿Actualizar las materias según "${carrera}"?\nSe reemplazarán las actuales sin notas guardadas.`)) {
+      materiasData = getCarreraMaterias(carrera);
+      renderMaterias(); guardarMateriasFB();
+      renderForosYMentorias(carrera);
+      showToast(`Materias y foros cargados para ${carrera} ✓`, 'school');
+    }
+  }
+  guardarPerfilEstudiantil();
+}
+
+async function guardarPerfilEstudiantil() {
+  const ciclo = document.getElementById('perfil-ciclo').value;
+  const carrera = document.getElementById('perfil-carrera').value;
+  document.getElementById('info-ciclo').textContent = ciclo ? `${ciclo} Ciclo` : 'Sin especificar';
+  document.getElementById('info-carrera').textContent = carrera || 'Sin especificar';
+  actualizarChipsInicio(ciclo, carrera);
+  const badge = document.getElementById('carrera-badge-notas');
+  if (badge && carrera) {
+    badge.style.display = 'inline-flex';
+    badge.innerHTML = `<span class="material-symbols-outlined" style="font-size:16px">school</span>${carrera}`;
+  }
+  if (isGuest()) { sessionStorage.setItem('guestCiclo', ciclo); sessionStorage.setItem('guestCarrera', carrera); return; }
+  if (currentUser) {
+    try {
+      await db.collection('usuarios').doc(currentUser.uid).set({
+        ciclo: ciclo || null, carrera: carrera || null,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+      showToast('Perfil actualizado ✓', 'save');
+    } catch (e) { console.warn('Error al guardar:', e); }
+  }
+}
+
+function actualizarChipsInicio(ciclo, carrera) {
+  const container = document.getElementById('perfil-chips');
+  if (!container) return;
+  container.innerHTML = '';
+  if (ciclo) container.innerHTML += `<span class="perfil-chip"><span class="material-symbols-outlined" style="font-size:15px">school</span>${ciclo} Ciclo</span>`;
+  if (carrera) container.innerHTML += `<span class="perfil-chip"><span class="material-symbols-outlined" style="font-size:15px">engineering</span>${carrera}</span>`;
+}
+
+async function confirmLogout() {
+  if (confirm('¿Estás seguro que deseas cerrar sesión?')) {
+    sessionStorage.clear();
+    if (currentUser) await auth.signOut();
+    window.location.href = 'index.html';
+  }
+}
+
+// ══ CURSOS POR CARRERA ══
+const CARRERAS_CURSOS = {
+  'Ingeniería de Sistemas': ['Cálculo Diferencial','Álgebra Lineal','Programación I','Física I','Introducción a la Ingeniería','Comunicación Escrita'],
+  'Ingeniería Civil': ['Cálculo Diferencial','Álgebra Lineal','Física I','Química General','Dibujo Técnico','Introducción a la Ingeniería Civil'],
+  'Ingeniería Industrial': ['Cálculo Diferencial','Álgebra Lineal','Física I','Química General','Estadística I','Economía General'],
+  'Ingeniería Electrónica': ['Cálculo Diferencial','Álgebra Lineal','Física I','Circuitos Eléctricos I','Programación I','Electrónica Básica'],
+  'Ingeniería Ambiental': ['Cálculo Diferencial','Física I','Química General','Ecología','Biología General','Comunicación Ambiental'],
+  'Administración': ['Introducción a la Administración','Matemática Básica','Contabilidad I','Economía General','Derecho Empresarial','Comunicación Organizacional'],
+  'Contabilidad': ['Contabilidad General I','Matemática Básica','Economía General','Derecho Tributario','Introducción a las Finanzas','Comunicación Profesional'],
+  'Derecho': ['Introducción al Derecho','Historia del Derecho','Derecho Constitucional','Lógica Jurídica','Sociología del Derecho','Comunicación Jurídica'],
+  'Medicina': ['Anatomía I','Biología Celular','Química Orgánica','Embriología','Fisiología I','Histología'],
+  'Psicología': ['Introducción a la Psicología','Neurociencias Básicas','Estadística I','Metodología de Investigación','Psicología del Desarrollo','Comunicación Interpersonal'],
+  'Arquitectura': ['Dibujo Arquitectónico I','Historia de la Arquitectura','Matemática Básica','Física I','Taller de Diseño I','Expresión Gráfica'],
+  'Educación': ['Pedagogía General','Psicología Educativa','Didáctica General','Comunicación Oral y Escrita','Sociología de la Educación','Filosofía de la Educación'],
+  'Economía': ['Microeconomía I','Macroeconomía I','Matemática Económica','Estadística I','Contabilidad Básica','Historia Económica'],
+  'Comunicaciones': ['Teoría de la Comunicación','Redacción Periodística','Fotografía I','Historia de los Medios','Comunicación Digital','Oratoria y Presentación'],
+  'Otra': ['Materia 1','Materia 2','Materia 3','Materia 4','Materia 5','Materia 6'],
+};
+function getCarreraMaterias(carrera) {
+  const cursos = CARRERAS_CURSOS[carrera] || CARRERAS_CURSOS['Otra'];
+  return cursos.map((nombre, i) => ({ id: i + 1, nombre, nota: '', min: 11 }));
+}
+
+// ══ FOROS Y MENTORIAS ══
+const FOROS_POR_CARRERA = {
+  'Ingeniería de Sistemas': [
+    { icon: '💻', tema: 'Estrategias para Programación I', area: 'Computación', participantes: 42 },
+    { icon: '📐', tema: 'Cómo aprobar Cálculo Diferencial', area: 'Matemáticas', participantes: 38 },
+    { icon: '🔗', tema: 'Club de Algoritmos y Estructuras', area: 'Sistemas', participantes: 29 },
+  ],
+  'Ingeniería Civil': [
+    { icon: '🏗️', tema: 'Tips para Dibujo Técnico', area: 'Ingeniería', participantes: 35 },
+    { icon: '📏', tema: 'Física I — Resolución de problemas', area: 'Ciencias', participantes: 52 },
+    { icon: '🧱', tema: 'Materiales de Construcción', area: 'Civil', participantes: 18 },
+  ],
+  'Medicina': [
+    { icon: '🫀', tema: 'Laboratorio de Anatomía I', area: 'Medicina', participantes: 67 },
+    { icon: '🔬', tema: 'Histología — Preparación examen', area: 'Biología', participantes: 44 },
+    { icon: '💊', tema: 'Club de Lectura Científica', area: 'Humanidades', participantes: 89 },
+  ],
+  'Psicología': [
+    { icon: '🧠', tema: 'Neurociencias — Repaso colectivo', area: 'Psicología', participantes: 31 },
+    { icon: '📊', tema: 'Estadística aplicada a la conducta', area: 'Métodos', participantes: 25 },
+    { icon: '🌱', tema: 'Bienestar emocional estudiantes', area: 'Apoyo', participantes: 58 },
+  ],
+  'default': [
+    { icon: '📚', tema: 'Estrategias para el ciclo actual', area: 'General', participantes: 42 },
+    { icon: '🧑‍🤝‍🧑', tema: 'Grupo de estudio interdisciplinario', area: 'Colaboración', participantes: 28 },
+    { icon: '📖', tema: 'Club de Lectura Contemporánea', area: 'Humanidades', participantes: 89 },
+  ]
+};
+
+const MENTORIAS_POR_CARRERA = {
+  'Ingeniería de Sistemas': [
+    { nombre: 'Dra. Sofía Ramos', materia: 'Programación I', tipo: 'Asesoría Individual', hora: '16:00 Hoy', color: '#4b5a9c' },
+    { nombre: 'Lic. Carlos Vega', materia: 'Álgebra Lineal', tipo: 'Taller Grupal', hora: '10:30 Mañana', color: '#5f5a7c' },
+  ],
+  'Medicina': [
+    { nombre: 'Dr. Miguel Torres', materia: 'Anatomía I', tipo: 'Asesoría Individual', hora: '15:00 Hoy', color: '#be123c' },
+    { nombre: 'Dra. Laura Paz', materia: 'Fisiología I', tipo: 'Taller Grupal', hora: '09:00 Mañana', color: '#059669' },
+  ],
+  'default': [
+    { nombre: 'Lic. Ana García', materia: 'Materia Principal', tipo: 'Asesoría Individual', hora: '16:00 Hoy', color: '#4b5a9c' },
+    { nombre: 'Mg. Javier Ruiz', materia: 'Curso de Apoyo', tipo: 'Taller Grupal', hora: '10:30 Mañana', color: '#5f5a7c' },
+  ]
+};
+
+function renderForosYMentorias(carrera) {
+  const foros = FOROS_POR_CARRERA[carrera] || FOROS_POR_CARRERA['default'];
+  const mentorias = MENTORIAS_POR_CARRERA[carrera] || MENTORIAS_POR_CARRERA['default'];
+  const forosList = document.getElementById('foros-list');
+  const mentoriasList = document.getElementById('mentorias-list');
+  if (!forosList || !mentoriasList) return;
+
+  forosList.innerHTML = foros.map(f => `
+    <div class="foro-card" onclick="showToast('Uniéndote al foro: ${f.tema}','forum')">
+      <div style="width:42px;height:42px;border-radius:12px;background:rgba(75,90,156,0.1);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">${f.icon}</div>
+      <div class="flex-1 min-w-0">
+        <div class="font-bold text-sm text-on-surface leading-tight">${f.tema}</div>
+        <div class="text-xs text-primary font-semibold mt-0.5">${f.area} · ${f.participantes} participantes</div>
+      </div>
+      <span class="material-symbols-outlined text-outline" style="font-size:18px">chevron_right</span>
+    </div>`).join('');
+
+  mentoriasList.innerHTML = mentorias.map(m => `
+    <div class="mentor-card" onclick="showToast('Solicitando mentoría con ${m.nombre}','school')">
+      <div style="width:44px;height:44px;border-radius:50%;background:${m.color};display:flex;align-items:center;justify-content:center;color:white;font-family:'Fredoka',sans-serif;font-weight:700;font-size:16px;flex-shrink:0">${m.nombre.charAt(0)}</div>
+      <div class="flex-1">
+        <div class="font-bold text-sm">${m.materia}</div>
+        <div class="text-xs text-on-surface-variant">${m.tipo} · ${m.hora}</div>
+      </div>
+      <span class="px-2 py-1 text-xs font-bold rounded-full" style="background:rgba(75,90,156,0.1);color:#4b5a9c">Unirse</span>
+    </div>`).join('');
+}
+
+// ══ PENDING ITEMS (AI) ══
+function renderPendingItems() {
+  const container = document.getElementById('pending-container');
+  if (!container) return;
+  const pendientes = [
+    { label: '3 inasistencias consecutivas', color: '#ba1a1a', bg: 'rgba(186,26,26,0.08)' },
+    { label: 'Examen parcial pendiente en Física', color: '#b45309', bg: 'rgba(245,158,11,0.08)' },
+    { label: 'Foro de bienvenida sin completar', color: '#4b5a9c', bg: 'rgba(75,90,156,0.08)' },
+  ];
+  container.innerHTML = `<div class="text-xs font-bold text-outline uppercase tracking-wider mb-1" style="width:100%">📌 <strong>La IA detectó pendientes para ti:</strong></div>` +
+    pendientes.map(p => `<div class="pending-item" style="background:${p.bg}"><div class="pending-dot" style="background:${p.color}"></div><strong style="color:${p.color}">${p.label}</strong></div>`).join('');
+}
+
+// ══ NAVEGACIÓN ══
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  const page = document.getElementById('page-' + name);
+  if (page) page.classList.add('active');
+  const map = { inicio:0, alertas:1, notas:2, asistencia:3, apoyo:4 };
+  const links = document.querySelectorAll('.nav-link');
+  if (map[name] !== undefined && links[map[name]]) links[map[name]].classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ══ TOAST ══
+let toastTimer;
+function showToast(msg, icon = 'check_circle') {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.querySelector('.material-symbols-outlined').textContent = icon;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+// ══ MODALS ══
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+
+// ══ ACTIONS ══
+function submitJustificacion() { closeModal('modal-justificar'); showToast('Justificación enviada exitosamente ✓', 'assignment_turned_in'); }
+function submitNota() { closeModal('modal-nota'); showToast('Nota guardada correctamente ✓', 'note_add'); }
+function submitMeta() { closeModal('modal-meta'); showToast('Meta agregada a tu dashboard ✓', 'target'); }
+function exportPDF() { showToast('Generando PDF... Descarga lista en segundos', 'description'); }
+function dismissAlert(btn) {
+  const card = btn.closest('.alert-card');
+  card.style.transition = 'all 0.4s'; card.style.opacity = '0'; card.style.transform = 'translateX(30px)';
+  setTimeout(() => { card.style.display = 'none'; showToast('Alerta descartada', 'check'); }, 400);
+}
+
+// ══ MOOD ══
+let currentMood = null;
+function selectMood(btn, mood) {
+  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  currentMood = mood;
+  document.getElementById('mood-intensity-section').style.display = 'block';
+  document.getElementById('mood-name-label').textContent = mood;
+  document.getElementById('mood-slider').value = 50;
+  updateMoodIntensity(50);
+  showToast(`Estado de ánimo seleccionado: ${mood}`, 'mood');
+}
+function updateMoodIntensity(val) {
+  const v = parseInt(val);
+  document.getElementById('mood-pct').textContent = v + '%';
+  document.getElementById('mood-fill').style.width = v + '%';
+  // Change fill color by intensity
+  const r = Math.round(75 + (v/100)*80);
+  const g = Math.round(90 + (v/100)*(-40));
+  const b = Math.round(156 + (v/100)*(-80));
+  document.getElementById('mood-fill').style.background = `linear-gradient(90deg, rgb(121,134,203), rgb(${r},${g},${b}))`;
+}
+
+function selectTone(btn) {
+  document.querySelectorAll('.tone-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  showToast(`Tono de IA cambiado a: ${btn.textContent.trim()}`, 'psychology');
+}
+
+function filterAlerts(type, btn) {
+  document.querySelectorAll('.alert-card').forEach(c => { c.style.display = (type === 'todas' || c.dataset.type === type) ? 'flex' : 'none'; });
+  btn.parentElement.querySelectorAll('button').forEach(b => { b.style.background = 'rgba(255,255,255,0.7)'; b.style.color = '#454650'; });
+  btn.style.background = '#4b5a9c'; btn.style.color = 'white';
+}
+
+// ══ CHAT ══
+const chatResponses = [
+  'Entiendo cómo te sientes. Es normal sentir presión académica. ¿Quieres hablar más sobre eso?',
+  'Gracias por compartir. Recuerda que pedir ayuda es una fortaleza, no una debilidad.',
+  'Estoy aquí para apoyarte. ¿Has considerado hablar con un tutor o consejero académico?',
+  'Es importante cuidar tu bienestar mental tanto como tu rendimiento académico.',
+  'Cada pequeño avance cuenta. ¿Qué es algo positivo que ocurrió hoy?',
+  'Recuerda tomar descansos. El descanso es parte del aprendizaje.',
+];
+let chatIdx = 0;
+function sendChat() {
+  const input = document.getElementById('chat-input'), msg = input.value.trim();
+  if (!msg) return;
+  const msgs = document.getElementById('chat-messages');
+  const uDiv = document.createElement('div'); uDiv.className = 'chat-msg user'; uDiv.textContent = msg;
+  msgs.appendChild(uDiv); input.value = ''; msgs.scrollTop = msgs.scrollHeight;
+  setTimeout(() => {
+    const bDiv = document.createElement('div'); bDiv.className = 'chat-msg bot';
+    bDiv.textContent = chatResponses[chatIdx % chatResponses.length]; chatIdx++;
+    msgs.appendChild(bDiv); msgs.scrollTop = msgs.scrollHeight;
+  }, 700);
+}
+
+// ══ MATERIAS ══
+let materiasData = [
+  { id: 1, nombre: 'Cálculo Diferencial', nota: '', min: 11 },
+  { id: 2, nombre: 'Programación I', nota: '', min: 11 },
+  { id: 3, nombre: 'Álgebra Lineal', nota: '', min: 11 },
+  { id: 4, nombre: 'Física General', nota: '', min: 11 },
+  { id: 5, nombre: 'Inglés Técnico', nota: '', min: 11 },
+  { id: 6, nombre: 'Comunicación Escrita', nota: '', min: 11 },
+];
+let nextId = 100;
+
+function renderMaterias() {
+  const tbody = document.getElementById('materias-tbody');
+  tbody.innerHTML = '';
+  materiasData.forEach((m, idx) => {
+    const nota = m.nota === '' ? null : parseFloat(m.nota);
+    const min = parseFloat(m.min) || 11;
+    let estado = 'pendiente';
+    if (nota !== null && !isNaN(nota)) estado = nota >= min ? 'aprobado' : 'desaprobado';
+    const estadoLabel = estado === 'aprobado'
+      ? `<span class="estado-badge aprobado"><span class="material-symbols-outlined" style="font-size:14px;font-variation-settings:'FILL' 1">check_circle</span>Aprobado</span>`
+      : estado === 'desaprobado'
+      ? `<span class="estado-badge desaprobado"><span class="material-symbols-outlined" style="font-size:14px;font-variation-settings:'FILL' 1">cancel</span>Desaprobado</span>`
+      : `<span class="estado-badge pendiente"><span class="material-symbols-outlined" style="font-size:14px">hourglass_empty</span>Pendiente</span>`;
+    const tr = document.createElement('tr');
+    tr.className = `materia-row ${estado}`;
+    tr.innerHTML = `
+      <td style="font-size:13px;font-weight:700;color:#767681;text-align:center">${idx+1}</td>
+      <td><div class="materia-nombre"><input type="text" value="${m.nombre}" placeholder="Nombre de la materia"
+        onchange="updateMateria(${m.id},'nombre',this.value)" onblur="updateMateria(${m.id},'nombre',this.value)"/></div></td>
+      <td style="text-align:center"><input type="number" class="nota-input ${estado!=='pendiente'?estado:''}"
+        value="${m.nota}" min="0" max="20" step="0.1" placeholder="—"
+        oninput="updateMateria(${m.id},'nota',this.value)" title="Nota obtenida (0–20)"/></td>
+      <td style="text-align:center"><input type="number" class="min-input"
+        value="${m.min}" min="0" max="20" step="0.5"
+        oninput="updateMateria(${m.id},'min',this.value)" title="Mínimo para aprobar"/></td>
+      <td style="text-align:center">${estadoLabel}</td>
+      <td style="text-align:center"><button class="del-btn" onclick="eliminarMateria(${m.id})" title="Eliminar">
+        <span class="material-symbols-outlined" style="font-size:18px">delete</span></button></td>`;
+    tbody.appendChild(tr);
+  });
+  calcularPromedio();
+}
+
+function updateMateria(id, campo, valor) {
+  const m = materiasData.find(x => x.id === id);
+  if (!m) return;
+  if (campo === 'nota') { const v = parseFloat(valor); m.nota = isNaN(v) ? '' : Math.min(20, Math.max(0, v)); }
+  else if (campo === 'min') { const v = parseFloat(valor); m.min = isNaN(v) ? 11 : Math.min(20, Math.max(0, v)); }
+  else { m[campo] = valor; }
+  renderMaterias(); guardarMateriasFB();
+}
+
+function agregarMateria() {
+  materiasData.push({ id: nextId++, nombre: `Materia ${materiasData.length+1}`, nota: '', min: 11 });
+  renderMaterias(); guardarMateriasFB();
+  showToast('Materia agregada', 'add_circle');
+  setTimeout(() => {
+    const lastRow = document.getElementById('materias-tbody').lastElementChild;
+    if (lastRow) { lastRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); const inp = lastRow.querySelector('input[type="text"]'); if (inp) inp.select(); }
+  }, 100);
+}
+
+function eliminarMateria(id) {
+  if (materiasData.length <= 1) { showToast('Debe haber al menos una materia', 'warning'); return; }
+  materiasData = materiasData.filter(m => m.id !== id);
+  renderMaterias(); guardarMateriasFB();
+  showToast('Materia eliminada', 'delete');
+}
+
+function resetMaterias() {
+  if (!confirm('¿Deseas reiniciar todas las notas?')) return;
+  materiasData.forEach(m => { m.nota = ''; });
+  renderMaterias(); guardarMateriasFB();
+  showToast('Notas reiniciadas', 'refresh');
+}
+
+function calcularPromedio() {
+  const conNota = materiasData.filter(m => m.nota !== '' && !isNaN(parseFloat(m.nota)));
+  const aprobadas = conNota.filter(m => parseFloat(m.nota) >= (parseFloat(m.min) || 11)).length;
+  const desaprobadas = conNota.filter(m => parseFloat(m.nota) < (parseFloat(m.min) || 11)).length;
+  const pendientes = materiasData.length - conNota.length;
+  document.getElementById('count-aprobadas').textContent = aprobadas;
+  document.getElementById('count-desaprobadas').textContent = desaprobadas;
+  document.getElementById('count-pendientes').textContent = pendientes;
+  if (conNota.length === 0) {
+    document.getElementById('promedio-display').textContent = '—';
+    document.getElementById('inicio-promedio-ia').innerHTML = `<span class="material-symbols-outlined" style="font-size:18px">grade</span> Sin datos`;
+    document.getElementById('perfil-promedio-stat').textContent = '—';
+    return;
+  }
+  const suma = conNota.reduce((acc, m) => acc + parseFloat(m.nota), 0);
+  const promedio = (suma / conNota.length).toFixed(2);
+  document.getElementById('promedio-display').textContent = promedio;
+  document.getElementById('inicio-promedio-ia').innerHTML = `<span class="material-symbols-outlined" style="font-size:18px">grade</span> ${promedio}`;
+  document.getElementById('perfil-promedio-stat').textContent = promedio;
+}
+
+async function guardarMateriasFB() {
+  if (isGuest() || !currentUser || currentUser.isAnonymous) return;
+  try {
+    await db.collection('usuarios').doc(currentUser.uid).set({ materias: materiasData, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+  } catch (e) { console.warn('No se pudieron guardar las materias:', e); }
+}
+
+// Restore avatar + init foros
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = sessionStorage.getItem('customAvatar');
+  if (saved) { document.getElementById('perfil-foto').src = saved; document.getElementById('nav-avatar').src = saved; }
+  // Default foros
+  renderForosYMentorias('default');
+});
+</script>
+</body>
+</html>

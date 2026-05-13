@@ -1,0 +1,1370 @@
+<!DOCTYPE html>
+<html lang="es" class="light">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Reten IA — Dashboard Académico</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "primary": "#4b5a9c","primary-container": "#a5b4fc","primary-fixed": "#dde1ff","primary-fixed-dim": "#b8c4ff",
+          "on-primary": "#ffffff","on-primary-container": "#354484","on-primary-fixed": "#001354","on-primary-fixed-variant": "#334282",
+          "secondary": "#5f5a7c","secondary-container": "#dcd5fd","on-secondary": "#ffffff","on-secondary-container": "#605b7d",
+          "tertiary": "#576065","tertiary-container": "#b0b9bf","tertiary-fixed": "#dbe4ea","on-tertiary": "#ffffff","on-tertiary-container": "#414a4f",
+          "error": "#ba1a1a","error-container": "#ffdad6","on-error": "#ffffff","on-error-container": "#93000a",
+          "surface": "#f8f9ff","surface-bright": "#f8f9ff","surface-dim": "#cbdbf5","surface-variant": "#d3e4fe",
+          "surface-container": "#e5eeff","surface-container-low": "#eff4ff","surface-container-high": "#dce9ff",
+          "surface-container-highest": "#d3e4fe","surface-container-lowest": "#ffffff",
+          "on-surface": "#0b1c30","on-surface-variant": "#454650","outline": "#767681","outline-variant": "#c6c5d2",
+          "inverse-surface": "#213145","inverse-primary": "#b8c4ff","emerald": "#10b981","rose": "#f43f5e","amber": "#f59e0b",
+        },
+        fontFamily: { "display": ["Fredoka","sans-serif"], "body": ["Quicksand","sans-serif"] }
+      }
+    }
+  }
+</script>
+
+<style>
+/* ─── CSS VARIABLES FOR DARK MODE ─── */
+:root {
+  --bg: #f8f9ff;
+  --nav-bg: rgba(248,249,255,0.85);
+  --card-bg: rgba(255,255,255,0.72);
+  --card-border: rgba(255,255,255,0.55);
+  --card-shadow: rgba(75,90,156,0.07);
+  --text: #0b1c30;
+  --text-sub: #454650;
+  --outline: #767681;
+  --outline-v: #c6c5d2;
+  --surface-low: #eff4ff;
+  --surface-container: #e5eeff;
+  --surface-high: #dce9ff;
+  --surface-highest: #d3e4fe;
+  --input-bg: #eff4ff;
+  --footer-bg: linear-gradient(to bottom,#f8f9ff,#eff4ff);
+  --footer-border: rgba(198,197,210,0.3);
+  --primary: #4b5a9c;
+  --primary-container: rgba(165,180,252,0.2);
+  --calendar-future: #eff4ff;
+  --calendar-future-text: #454650;
+  --modal-bg: white;
+}
+.dark {
+  --bg: #0d1117;
+  --nav-bg: rgba(13,17,23,0.9);
+  --card-bg: rgba(20,28,50,0.75);
+  --card-border: rgba(75,90,156,0.25);
+  --card-shadow: rgba(0,0,0,0.3);
+  --text: #e8eeff;
+  --text-sub: #9aa3c8;
+  --outline: #6b7280;
+  --outline-v: #2e3555;
+  --surface-low: #1a2240;
+  --surface-container: #1e2a4a;
+  --surface-high: #232f52;
+  --surface-highest: #2a3660;
+  --input-bg: #1a2240;
+  --footer-bg: linear-gradient(to bottom,#0d1117,#0f1520);
+  --footer-border: rgba(46,53,85,0.5);
+  --primary: #7986cb;
+  --primary-container: rgba(75,90,156,0.2);
+  --calendar-future: #1a2240;
+  --calendar-future-text: #9aa3c8;
+  --modal-bg: #141c32;
+}
+
+body { font-family:'Quicksand',sans-serif; background:var(--bg); color:var(--text); transition:background 0.4s,color 0.4s; }
+h1,h2,h3,.brand-font { font-family:'Fredoka',sans-serif; }
+
+.glass-card {
+  background:var(--card-bg);
+  backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+  border:1px solid var(--card-border);
+  box-shadow:0 4px 24px var(--card-shadow);
+  transition:background 0.4s,border-color 0.4s;
+}
+.material-symbols-outlined { font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; vertical-align:middle; font-size:20px; display:inline-block; }
+.page { display:none; }
+.page.active { display:block; }
+#toast { position:fixed;bottom:24px;right:24px;z-index:9999;background:#4b5a9c;color:white;padding:12px 20px;border-radius:14px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 8px 24px rgba(75,90,156,0.3);transform:translateY(80px);opacity:0;transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none;font-family:'Quicksand',sans-serif; }
+#toast.show { transform:translateY(0);opacity:1; }
+
+.modal-overlay { position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.45);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:16px; }
+.modal-overlay.open { display:flex; }
+.modal { background:var(--modal-bg);border-radius:20px;padding:32px;max-width:460px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,0.2);animation:modalIn 0.3s cubic-bezier(0.34,1.56,0.64,1);color:var(--text); }
+@keyframes modalIn { from{opacity:0;transform:scale(0.85)} to{opacity:1;transform:scale(1)} }
+
+/* MOOD */
+.mood-btn { display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;transition:all 0.25s;border:none;background:none;padding:2px; }
+.mood-btn .emoji-wrap { width:54px;height:54px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:30px;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);border:3px solid transparent;position:relative; }
+.mood-btn:hover .emoji-wrap { transform:scale(1.2) translateY(-4px);box-shadow:0 12px 28px rgba(0,0,0,0.25); }
+.mood-btn.selected .emoji-wrap { transform:scale(1.1);border-color:white;box-shadow:0 8px 24px rgba(0,0,0,0.22); }
+.mood-label { font-size:10px;font-weight:700;color:var(--text-sub);letter-spacing:0.03em; }
+.mood-btn.selected .mood-label { color:var(--primary); }
+.mood-intensity-bar { width:100%;height:8px;border-radius:999px;background:var(--surface-container);overflow:hidden;margin-top:4px;transition:all 0.3s; }
+.mood-intensity-fill { height:100%;border-radius:999px;transition:width 0.5s cubic-bezier(0.34,1.56,0.64,1);background:linear-gradient(90deg,#7986cb,#4b5a9c); }
+
+/* MOTIVATIONAL MSG after mood */
+.mood-motivational { border-radius:14px;padding:12px 14px;margin-top:10px;font-size:13px;font-weight:600;line-height:1.5;display:flex;align-items:flex-start;gap:10px;animation:fadeIn 0.4s ease;border:1px solid rgba(75,90,156,0.2);background:rgba(75,90,156,0.06); }
+.dark .mood-motivational { background:rgba(75,90,156,0.15); }
+
+/* MATERIAS */
+.materias-table { width:100%;border-collapse:separate;border-spacing:0 10px; }
+.materias-table thead th { font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--outline);padding:0 12px 8px;text-align:left; }
+.materia-row td { background:var(--card-bg);padding:14px 12px;border-top:1px solid var(--card-border);border-bottom:1px solid var(--card-border);transition:background 0.2s; }
+.materia-row td:first-child { border-left:4px solid #a5b4fc;border-radius:14px 0 0 14px; }
+.materia-row td:last-child { border-right:1px solid var(--card-border);border-radius:0 14px 14px 0; }
+.materia-row.aprobado td:first-child { border-left-color:#059669; }
+.materia-row.desaprobado td:first-child { border-left-color:#ba1a1a; }
+.nota-input,.min-input { width:72px;padding:7px 10px;border:1.5px solid var(--outline-v);border-radius:9px;font-family:'Quicksand',sans-serif;font-size:14px;font-weight:700;text-align:center;outline:none;transition:border-color 0.2s;background:var(--input-bg);color:var(--text); }
+.nota-input:focus,.min-input:focus { border-color:var(--primary); }
+.nota-input.aprobado { border-color:#059669;color:#059669;background:rgba(16,185,129,0.06); }
+.nota-input.desaprobado { border-color:#ba1a1a;color:#ba1a1a;background:rgba(186,26,26,0.05); }
+.estado-badge { display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:0.04em;transition:all 0.3s; }
+.estado-badge.aprobado { background:rgba(16,185,129,0.12);color:#059669; }
+.estado-badge.desaprobado { background:#ffdad6;color:#ba1a1a; }
+.estado-badge.pendiente { background:var(--surface-container);color:var(--outline); }
+.materia-nombre input { border:none;background:transparent;font-family:'Quicksand',sans-serif;font-weight:700;font-size:14px;color:var(--text);outline:none;width:100%;cursor:text; }
+.materia-nombre input:focus { border-bottom:1.5px dashed var(--primary); }
+
+/* CHAT */
+#chat-messages { display:flex;flex-direction:column;gap:12px;height:300px;overflow-y:auto;padding:4px; }
+.chat-msg { max-width:80%;padding:10px 14px;border-radius:14px;font-size:14px;line-height:1.5; }
+.chat-msg.user { align-self:flex-end;background:#4b5a9c;color:white;border-bottom-right-radius:4px; }
+.chat-msg.bot { align-self:flex-start;background:var(--surface-container);color:var(--text);border-bottom-left-radius:4px; }
+
+/* NAV */
+.nav-link { color:var(--text-sub);padding:6px 12px;border-radius:8px;cursor:pointer;border:none;background:none;font-family:'Quicksand',sans-serif;font-size:13px;font-weight:600;letter-spacing:0.02em;transition:all 0.2s;text-decoration:none;border-bottom:2px solid transparent; }
+.nav-link:hover { color:var(--primary);background:rgba(75,90,156,0.08); }
+.nav-link.active { color:var(--primary);font-weight:700;border-bottom-color:var(--primary); }
+.brand-pill { display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#4b5a9c,#7986cb);color:white;padding:6px 14px;border-radius:999px;font-family:'Fredoka',sans-serif;font-size:20px;font-weight:700;letter-spacing:0.02em;box-shadow:0 4px 16px rgba(75,90,156,0.3); }
+.brand-pill .dot { width:8px;height:8px;border-radius:50%;background:#a5b4fc; }
+.nav-avatar-btn { width:38px;height:38px;border-radius:999px;overflow:hidden;border:2.5px solid #a5b4fc;cursor:pointer;transition:all 0.2s;box-shadow:0 2px 8px rgba(75,90,156,0.2); }
+.nav-avatar-btn:hover { transform:scale(1.08);border-color:#4b5a9c; }
+.nav-avatar-btn img { width:100%;height:100%;object-fit:cover; }
+
+/* PROFILE PANEL - CENTERED */
+#profile-panel-overlay { position:fixed;inset:0;z-index:600;background:rgba(0,0,0,0.5);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:20px; }
+#profile-panel-overlay.open { display:flex; }
+#profile-panel { background:var(--modal-bg);border-radius:24px;padding:0;width:100%;max-width:480px;max-height:88vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,0.25);animation:modalIn 0.35s cubic-bezier(0.34,1.56,0.64,1);color:var(--text); }
+
+/* CALENDAR */
+.cal-day { aspect-ratio:1;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.15s;position:relative; }
+.cal-day.empty { color:var(--outline-v);background:transparent;cursor:default; }
+.cal-day.present { background:rgba(16,185,129,0.12);color:#059669;border:1px solid rgba(16,185,129,0.2); }
+.cal-day.absent { background:rgba(244,63,94,0.12);color:#be123c;border:1px solid rgba(244,63,94,0.2); }
+.cal-day.late { background:rgba(245,158,11,0.12);color:#b45309;border:1px solid rgba(245,158,11,0.2); }
+.cal-day.today { outline:2px solid var(--primary); }
+.cal-day.future { background:var(--calendar-future);color:var(--calendar-future-text); }
+.cal-day.has-note::after { content:'';position:absolute;top:3px;right:3px;width:6px;height:6px;border-radius:50%;background:var(--primary);border:1px solid white; }
+.cal-day:not(.empty):hover { transform:scale(1.08);box-shadow:0 2px 12px rgba(75,90,156,0.2); }
+
+/* CARDS */
+.progress-bar { height:8px;border-radius:999px;background:var(--surface-container);overflow:hidden; }
+.progress-fill { height:100%;border-radius:999px;background:linear-gradient(90deg,#7986cb,#4b5a9c);transition:width 1s ease; }
+.tone-btn { display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px;border-radius:14px;cursor:pointer;transition:all 0.2s;border:2px solid var(--outline-v);background:none;font-family:'Quicksand',sans-serif;font-size:13px;font-weight:600;color:var(--text-sub); }
+.tone-btn.active,.tone-btn:hover { border-color:var(--primary);color:var(--primary);background:rgba(75,90,156,0.06); }
+.alert-card { border-radius:14px;padding:20px;display:flex;gap:16px;align-items:flex-start; }
+.guest-banner { background:linear-gradient(135deg,#fffbea,#fff3cd);border:1.5px solid rgba(245,158,11,0.3);border-radius:14px;padding:12px 18px;margin-bottom:20px;display:flex;align-items:center;gap:12px;font-size:13px;font-weight:600;color:#78490a; }
+.dark .guest-banner { background:linear-gradient(135deg,#2a1f00,#1f1700);color:#fbbf24;border-color:rgba(245,158,11,0.2); }
+.perfil-chip { display:inline-flex;align-items:center;gap:6px;background:rgba(75,90,156,0.1);color:var(--primary);padding:4px 12px;border-radius:999px;font-size:13px;font-weight:600;margin-right:8px; }
+.promedio-banner { border-radius:16px;padding:20px 24px;background:linear-gradient(135deg,#4b5a9c,#7986cb);color:white;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px; }
+.add-materia-btn { display:flex;align-items:center;gap:8px;padding:9px 18px;border-radius:12px;background:rgba(75,90,156,0.08);color:var(--primary);border:1.5px dashed rgba(75,90,156,0.3);font-family:'Quicksand',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s;width:100%;justify-content:center;margin-top:8px; }
+.add-materia-btn:hover { background:rgba(75,90,156,0.14);border-color:var(--primary); }
+.del-btn { padding:6px;border:none;background:none;cursor:pointer;color:var(--outline-v);border-radius:8px;transition:all 0.2s;display:flex;align-items:center; }
+.del-btn:hover { color:#ba1a1a;background:#ffdad6; }
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--outline-v);border-radius:999px}
+@keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+.page.active { animation:fadeIn 0.3s ease; }
+.info-field { padding:12px 16px;border-radius:12px;background:var(--input-bg);border:1px solid var(--outline-v);display:flex;align-items:center;gap:12px;color:var(--text); }
+.select-field-inline { padding:9px 32px 9px 12px;border:1.5px solid var(--outline-v);border-radius:10px;font-family:'Quicksand',sans-serif;font-size:14px;font-weight:600;color:var(--text);background:var(--input-bg);outline:none;cursor:pointer;transition:border-color 0.2s;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23767681' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;width:100%; }
+.select-field-inline:focus { border-color:var(--primary); }
+.avatar-upload-wrap { position:relative;width:120px;height:120px;margin:0 auto 8px;cursor:pointer; }
+.avatar-upload-wrap img { width:120px;height:120px;border-radius:999px;object-fit:cover;border:4px solid white;box-shadow:0 4px 16px rgba(75,90,156,0.15);transition:filter 0.2s;display:block; }
+.avatar-upload-wrap:hover img { filter:brightness(0.75); }
+.avatar-overlay { position:absolute;inset:0;border-radius:999px;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s; }
+.avatar-upload-wrap:hover .avatar-overlay { opacity:1; }
+.avatar-verified { position:absolute;bottom:4px;right:4px;background:#4b5a9c;padding:6px;border-radius:999px;border:2px solid white; }
+#avatar-file-input { display:none; }
+
+/* PENDING ITEMS */
+.pending-item { display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;font-size:13px;font-weight:700;color:var(--text); }
+.pending-dot { width:8px;height:8px;border-radius:50%;flex-shrink:0; }
+
+/* FOROS / MENTORIAS */
+.foro-card { display:flex;align-items:center;gap:14px;padding:14px;border-radius:14px;background:var(--card-bg);border:1px solid var(--card-border);cursor:pointer;transition:all 0.2s; }
+.foro-card:hover { background:rgba(255,255,255,0.9);transform:translateX(4px);box-shadow:0 4px 16px rgba(75,90,156,0.1); }
+.dark .foro-card:hover { background:rgba(30,42,74,0.9); }
+.mentor-card { display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;background:var(--card-bg);border:1px solid var(--card-border);cursor:pointer;transition:all 0.2s; }
+.mentor-card:hover { transform:translateY(-2px);box-shadow:0 4px 16px rgba(75,90,156,0.12); }
+
+/* DARK MODE TOGGLE */
+.dark-toggle { width:40px;height:40px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s;background:var(--card-bg);box-shadow:0 2px 8px var(--card-shadow);color:var(--text); }
+.dark-toggle:hover { transform:scale(1.1);box-shadow:0 4px 16px var(--card-shadow); }
+
+/* MODAL INPUTS DARK */
+.modal input,.modal textarea,.modal select { background:var(--input-bg);color:var(--text);border-color:var(--outline-v); }
+
+/* MODAL CALENDAR NOTE */
+#modal-cal-note .modal { max-width:400px; }
+
+/* FOOTER */
+.footer-link { color:var(--text-sub);font-size:13px;font-weight:600;text-decoration:none;transition:color 0.2s;cursor:pointer; }
+.footer-link:hover { color:var(--primary); }
+.footer-quick-link { display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;background:var(--card-bg);border:1px solid var(--card-border);color:var(--text-sub);font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;text-decoration:none; }
+.footer-quick-link:hover { background:rgba(75,90,156,0.08);border-color:#a5b4fc;color:var(--primary);transform:translateY(-2px); }
+.quote-italic { font-style:italic;font-family:'Quicksand',sans-serif;color:var(--text-sub);font-size:14px;line-height:1.6; }
+
+/* DARK FORM ELEMENTS */
+.dark .materias-table thead th { color:var(--outline); }
+.dark .glass-card { background:var(--card-bg); }
+
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+</style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+<!-- TOAST -->
+<div id="toast">
+  <span class="material-symbols-outlined" style="font-size:18px">check_circle</span>
+  <span id="toast-msg">Acción completada</span>
+</div>
+
+<!-- ══ MODALS ══ -->
+<div class="modal-overlay" id="modal-justificar">
+  <div class="modal">
+    <h3 class="text-2xl text-primary mb-2" style="font-family:'Fredoka',sans-serif">Justificar Inasistencia</h3>
+    <p style="color:var(--text-sub);font-size:13px;margin-bottom:16px">Completa el formulario para justificar tu falta. Tienes 48 horas desde la inasistencia.</p>
+    <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-sub);margin-bottom:6px">Curso</label>
+    <select class="w-full p-3 rounded-xl border mb-3 outline-none" style="font-family:'Quicksand',sans-serif;background:var(--input-bg);color:var(--text);border-color:var(--outline-v)">
+      <option>Estructuras de Datos</option><option>Cálculo IV</option><option>Física II</option><option>Inglés Técnico II</option>
+    </select>
+    <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-sub);margin-bottom:6px">Motivo</label>
+    <textarea class="w-full p-3 rounded-xl border mb-4 outline-none resize-y min-h-20" placeholder="Describe brevemente el motivo..." style="font-family:'Quicksand',sans-serif;background:var(--input-bg);color:var(--text);border-color:var(--outline-v)"></textarea>
+    <div class="flex gap-3">
+      <button class="flex-1 py-2.5 rounded-xl border text-sm font-bold transition-all" style="border-color:var(--outline-v);color:var(--text-sub);font-family:'Quicksand',sans-serif" onclick="closeModal('modal-justificar')">Cancelar</button>
+      <button class="flex-1 py-2.5 rounded-xl bg-primary text-white text-sm font-bold hover:-translate-y-0.5 transition-all" style="font-family:'Quicksand',sans-serif" onclick="submitJustificacion()">Enviar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-nota">
+  <div class="modal">
+    <h3 class="text-2xl text-primary mb-2" style="font-family:'Fredoka',sans-serif">Nueva Nota</h3>
+    <input class="w-full p-3 rounded-xl border text-sm mb-3 outline-none" placeholder="Título..." style="font-family:'Quicksand',sans-serif;background:var(--input-bg);color:var(--text);border-color:var(--outline-v)"/>
+    <textarea class="w-full p-3 rounded-xl border text-sm mb-4 outline-none resize-y min-h-20" placeholder="Escribe tu nota..." style="font-family:'Quicksand',sans-serif;background:var(--input-bg);color:var(--text);border-color:var(--outline-v)"></textarea>
+    <div class="flex gap-3">
+      <button class="flex-1 py-2.5 rounded-xl border text-sm font-bold transition-all" style="border-color:var(--outline-v);color:var(--text-sub);font-family:'Quicksand',sans-serif" onclick="closeModal('modal-nota')">Cancelar</button>
+      <button class="flex-1 py-2.5 rounded-xl bg-primary text-white text-sm font-bold hover:-translate-y-0.5 transition-all" style="font-family:'Quicksand',sans-serif" onclick="submitNota()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-meta">
+  <div class="modal">
+    <h3 class="text-2xl text-primary mb-2" style="font-family:'Fredoka',sans-serif">Agregar Meta Semanal</h3>
+    <input class="w-full p-3 rounded-xl border text-sm mb-4 outline-none" placeholder="Ej: Completar 3 tareas de Cálculo..." style="font-family:'Quicksand',sans-serif;background:var(--input-bg);color:var(--text);border-color:var(--outline-v)"/>
+    <div class="flex gap-3">
+      <button class="flex-1 py-2.5 rounded-xl border text-sm font-bold" style="border-color:var(--outline-v);color:var(--text-sub);font-family:'Quicksand',sans-serif" onclick="closeModal('modal-meta')">Cancelar</button>
+      <button class="flex-1 py-2.5 rounded-xl bg-primary text-white text-sm font-bold" style="font-family:'Quicksand',sans-serif" onclick="submitMeta()">Agregar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-chat">
+  <div class="modal" style="max-width:500px">
+    <div class="flex items-center gap-3 mb-4">
+      <div style="background:var(--surface-container);padding:10px;border-radius:14px"><span class="material-symbols-outlined text-primary" style="font-size:22px">psychology</span></div>
+      <div>
+        <h3 class="text-xl text-primary" style="font-family:'Fredoka',sans-serif;margin:0">Asistencia Psicológica IA</h3>
+        <p style="font-size:11px;color:var(--text-sub);margin:0">Confidencial • Disponible 24/7</p>
+      </div>
+    </div>
+    <div id="chat-messages">
+      <div class="chat-msg bot">¡Hola! 👋 Soy tu asistente de apoyo. ¿Cómo te sientes hoy?</div>
+    </div>
+    <div class="flex gap-2.5 mt-3">
+      <input id="chat-input" class="flex-1 px-3.5 py-2.5 rounded-xl border text-sm outline-none" placeholder="Escribe tu mensaje..." style="font-family:'Quicksand',sans-serif;background:var(--input-bg);color:var(--text);border-color:var(--outline-v)" onkeydown="if(event.key==='Enter')sendChat()"/>
+      <button class="px-4 py-2.5 rounded-xl bg-primary text-white flex items-center" onclick="sendChat()">
+        <span class="material-symbols-outlined" style="font-size:18px">send</span>
+      </button>
+    </div>
+    <button class="w-full mt-3 py-2.5 rounded-xl border text-sm font-bold" style="border-color:var(--outline-v);color:var(--text-sub);font-family:'Quicksand',sans-serif" onclick="closeModal('modal-chat')">Cerrar</button>
+  </div>
+</div>
+
+<!-- CALENDAR NOTE MODAL -->
+<div class="modal-overlay" id="modal-cal-note">
+  <div class="modal" style="max-width:400px">
+    <h3 class="text-xl text-primary mb-1" style="font-family:'Fredoka',sans-serif">📌 Nota del Día <span id="cal-note-day-label"></span></h3>
+    <p style="font-size:12px;color:var(--text-sub);margin-bottom:14px">Agrega un pendiente o recordatorio para este día.</p>
+    <input id="cal-note-input" class="w-full p-3 rounded-xl border text-sm mb-3 outline-none" placeholder="Ej: Entregar tarea de Cálculo, examen parcial..." style="font-family:'Quicksand',sans-serif;background:var(--input-bg);color:var(--text);border-color:var(--outline-v)"/>
+    <div id="cal-notes-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;max-height:160px;overflow-y:auto"></div>
+    <div class="flex gap-3">
+      <button class="flex-1 py-2.5 rounded-xl border text-sm font-bold" style="border-color:var(--outline-v);color:var(--text-sub);font-family:'Quicksand',sans-serif" onclick="closeModal('modal-cal-note')">Cerrar</button>
+      <button class="flex-1 py-2.5 rounded-xl bg-primary text-white text-sm font-bold" style="font-family:'Quicksand',sans-serif" onclick="saveCalNote()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PROFILE PANEL ══ -->
+<div id="profile-panel-overlay" onclick="closePanelIfBg(event)">
+  <div id="profile-panel">
+    <div style="background:linear-gradient(135deg,#4b5a9c,#7986cb);padding:28px 24px 20px;border-radius:24px 24px 0 0;">
+      <div class="flex justify-between items-start mb-4">
+        <span class="text-white text-lg font-bold" style="font-family:'Fredoka',sans-serif">Mi Perfil</span>
+        <button onclick="closeProfilePanel()" style="background:rgba(255,255,255,0.2);border:none;color:white;border-radius:50%;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;">✕</button>
+      </div>
+      <div class="flex items-center gap-4">
+        <div class="avatar-upload-wrap" style="width:80px;height:80px;margin:0" onclick="document.getElementById('avatar-file-input').click()">
+          <img id="perfil-foto" src="https://ui-avatars.com/api/?name=U&background=4b5a9c&color=fff" alt="Perfil" style="width:80px;height:80px;border-radius:999px;object-fit:cover;border:3px solid rgba(255,255,255,0.7)"/>
+          <div class="avatar-overlay" style="border-radius:999px;background:rgba(0,0,0,0.4)"><span class="material-symbols-outlined" style="color:white;font-size:22px">photo_camera</span></div>
+          <div style="position:absolute;bottom:2px;right:2px;background:#4b5a9c;padding:4px;border-radius:999px;border:2px solid white"><span class="material-symbols-outlined" style="color:white;font-size:12px">verified_user</span></div>
+        </div>
+        <div>
+          <div id="perfil-nombre" class="text-white font-bold text-xl" style="font-family:'Fredoka',sans-serif">Usuario</div>
+          <div id="perfil-email" class="text-white/70 text-xs mb-1"></div>
+          <span id="perfil-role-badge" class="px-3 py-1 text-white text-xs font-bold rounded-full" style="background:rgba(255,255,255,0.2)">Estudiante Universitario</span>
+        </div>
+      </div>
+    </div>
+    <div style="padding:20px 24px;">
+      <div class="grid grid-cols-2 gap-3 mb-4">
+        <div class="glass-card p-4 rounded-xl text-center"><div id="perfil-promedio-stat" class="font-bold text-primary leading-none" style="font-family:'Fredoka',sans-serif;font-size:32px">—</div><div class="text-xs font-bold uppercase tracking-wider mt-1" style="color:var(--text-sub)">Promedio</div></div>
+        <div class="glass-card p-4 rounded-xl text-center"><div class="font-bold text-primary leading-none" style="font-family:'Fredoka',sans-serif;font-size:32px">142</div><div class="text-xs font-bold uppercase tracking-wider mt-1" style="color:var(--text-sub)">Créditos</div></div>
+      </div>
+      <div class="glass-card p-5 rounded-xl mb-4" style="border-left:4px solid #4b5a9c">
+        <h4 class="flex items-center gap-2 mb-3" style="font-family:'Fredoka',sans-serif;font-size:16px"><span class="material-symbols-outlined text-primary">analytics</span>Score de Permanencia</h4>
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-primary font-bold text-sm">Alta probabilidad</span>
+          <span class="text-primary font-bold" style="font-family:'Fredoka',sans-serif;font-size:20px">85%</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:85%"></div></div>
+      </div>
+      <div class="glass-card p-5 rounded-xl mb-4">
+        <h4 class="flex items-center gap-2 mb-3" style="font-family:'Fredoka',sans-serif;font-size:16px"><span class="material-symbols-outlined text-secondary">school</span>Perfil Estudiantil</h4>
+        <div class="grid grid-cols-2 gap-3 mb-3">
+          <div><div class="text-xs font-bold uppercase tracking-wider mb-1" style="color:var(--outline)">Ciclo</div><select id="perfil-ciclo" class="select-field-inline" onchange="guardarPerfilEstudiantil()"><option value="">Sin especificar</option><option value="I">I Ciclo</option><option value="II">II Ciclo</option><option value="III">III Ciclo</option><option value="IV">IV Ciclo</option><option value="V">V Ciclo</option><option value="VI">VI Ciclo</option><option value="VII">VII Ciclo</option><option value="VIII">VIII Ciclo</option><option value="IX">IX Ciclo</option><option value="X">X Ciclo</option></select></div>
+          <div><div class="text-xs font-bold uppercase tracking-wider mb-1" style="color:var(--outline)">Carrera</div><select id="perfil-carrera" class="select-field-inline" onchange="onCarreraChange()"><option value="">Sin especificar</option><option value="Ingeniería de Sistemas">Ing. Sistemas</option><option value="Ingeniería Civil">Ing. Civil</option><option value="Ingeniería Industrial">Ing. Industrial</option><option value="Administración">Administración</option><option value="Medicina">Medicina</option><option value="Psicología">Psicología</option><option value="Derecho">Derecho</option><option value="Otra">Otra</option></select></div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><div class="text-xs font-bold mb-1" style="color:var(--outline)">Ciclo</div><div class="info-field"><span class="material-symbols-outlined text-primary/60" style="font-size:16px">school</span><span id="info-ciclo" class="text-sm font-bold">Sin especificar</span></div></div>
+          <div><div class="text-xs font-bold mb-1" style="color:var(--outline)">Carrera</div><div class="info-field"><span class="material-symbols-outlined text-primary/60" style="font-size:16px">engineering</span><span id="info-carrera" class="text-sm font-bold">Sin especificar</span></div></div>
+        </div>
+      </div>
+      <div class="glass-card p-5 rounded-xl mb-4">
+        <h4 class="flex items-center gap-2 mb-3" style="font-family:'Fredoka',sans-serif;font-size:16px"><span class="material-symbols-outlined text-primary">psychology</span>Preferencias de la IA</h4>
+        <div class="grid grid-cols-3 gap-2">
+          <button class="tone-btn active" onclick="selectTone(this)"><span class="material-symbols-outlined" style="font-size:20px">bolt</span>Motivador</button>
+          <button class="tone-btn" onclick="selectTone(this)"><span class="material-symbols-outlined" style="font-size:20px">directions_run</span>Directo</button>
+          <button class="tone-btn" onclick="selectTone(this)"><span class="material-symbols-outlined" style="font-size:20px">favorite</span>Empático</button>
+        </div>
+      </div>
+      <div class="glass-card p-5 rounded-xl mb-4">
+        <h4 class="flex items-center gap-2 mb-3" style="font-family:'Fredoka',sans-serif;font-size:16px"><span class="material-symbols-outlined text-primary">military_tech</span>Logros</h4>
+        <div class="grid grid-cols-3 gap-2">
+          <div class="flex flex-col items-center p-3 rounded-xl border text-center cursor-pointer hover:border-primary transition-all" style="background:var(--surface-low);border-color:var(--outline-v)" onclick="showToast('¡100% asistencia! 🏆','event_available')"><span class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1;font-size:24px">event_available</span><span class="text-xs font-bold mt-1 leading-tight">100% asist.</span></div>
+          <div class="flex flex-col items-center p-3 rounded-xl border text-center cursor-pointer hover:border-primary transition-all" style="background:var(--surface-low);border-color:var(--outline-v)" onclick="showToast('¡Top 10%! 🌟','workspace_premium')"><span class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1;font-size:24px">workspace_premium</span><span class="text-xs font-bold mt-1 leading-tight">Top 10%</span></div>
+          <div class="flex flex-col items-center p-3 rounded-xl border text-center cursor-pointer hover:border-primary transition-all" style="background:var(--surface-low);border-color:var(--outline-v)" onclick="showToast('¡Meta cumplida! 🎯','task_alt')"><span class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1;font-size:24px">task_alt</span><span class="text-xs font-bold mt-1 leading-tight">Meta semanal</span></div>
+        </div>
+      </div>
+      <!-- Dark mode toggle in profile -->
+      <div class="glass-card p-4 rounded-xl mb-4 flex items-center justify-between">
+        <div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary">dark_mode</span><span class="font-bold text-sm">Modo Oscuro</span></div>
+        <button onclick="toggleDark()" style="padding:8px 16px;border-radius:10px;background:var(--primary);color:white;border:none;font-family:'Quicksand',sans-serif;font-size:12px;font-weight:700;cursor:pointer" id="dark-toggle-profile">Activar</button>
+      </div>
+      <div class="flex gap-3">
+        <button class="flex-1 py-2.5 rounded-xl border text-sm font-bold transition-all flex items-center justify-center gap-2" style="border-color:var(--outline-v);color:var(--text-sub);font-family:'Quicksand',sans-serif" onclick="showToast('Restableciendo contraseña...','lock_reset')"><span class="material-symbols-outlined" style="font-size:16px">lock_reset</span> Cambiar Contraseña</button>
+        <button class="flex-1 py-2.5 rounded-xl text-sm font-bold hover:opacity-90 transition-all flex items-center justify-center gap-2" style="background:#ffdad6;color:#93000a;font-family:'Quicksand',sans-serif" onclick="confirmLogout()"><span class="material-symbols-outlined" style="font-size:16px">logout</span> Cerrar sesión</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="avatar-file-input" accept="image/*" onchange="handleAvatarUpload(this)"/>
+
+<!-- ══ NAVBAR ══ -->
+<nav style="position:fixed;top:0;width:100%;z-index:50;background:var(--nav-bg);backdrop-filter:blur(20px);border-bottom:1px solid var(--card-border);box-shadow:0 1px 8px var(--card-shadow);height:64px;transition:background 0.4s">
+  <div class="flex justify-between items-center px-6 h-full max-w-6xl mx-auto">
+    <div class="brand-pill">
+      <div class="dot"></div>Reten IA
+    </div>
+    <div class="hidden md:flex items-center gap-1">
+      <button class="nav-link active" onclick="showPage('inicio')">Inicio</button>
+      <button class="nav-link" onclick="showPage('alertas')">Alertas</button>
+      <button class="nav-link" onclick="showPage('notas')">Notas</button>
+      <button class="nav-link" onclick="showPage('asistencia')">Asistencia</button>
+      <button class="nav-link" onclick="showPage('apoyo')">Apoyo</button>
+    </div>
+    <div class="flex items-center gap-2">
+      <button class="dark-toggle" onclick="toggleDark()" title="Modo oscuro">
+        <span class="material-symbols-outlined" id="dark-icon" style="font-size:20px">dark_mode</span>
+      </button>
+      <button class="nav-avatar-btn" onclick="openProfilePanel()">
+        <img id="nav-avatar" src="https://ui-avatars.com/api/?name=U&background=4b5a9c&color=fff" alt="Avatar"/>
+      </button>
+      <button style="padding:8px;border-radius:50%;border:none;background:none;color:var(--text-sub);cursor:pointer;transition:all 0.2s;display:flex" onclick="showPage('configuracion')">
+        <span class="material-symbols-outlined">settings</span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- ══ PAGE: INICIO ══ -->
+<div class="page active pt-24 pb-12 px-6 max-w-6xl mx-auto w-full" id="page-inicio">
+  <div id="guest-banner-inicio" style="display:none" class="guest-banner">
+    <span class="material-symbols-outlined">person_outline</span>
+    Estás en <strong>modo invitado</strong>. Tus datos no se guardarán.
+    <a class="font-bold underline cursor-pointer" style="color:var(--primary)" onclick="window.location.href='index.html'">Iniciar sesión</a>
+  </div>
+  <header class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div class="flex-1">
+      <h1 id="welcome-title" class="text-primary font-bold leading-tight" style="font-family:'Fredoka',sans-serif;font-size:clamp(32px,5vw,48px)">Hola 👨‍🎓</h1>
+      <div id="perfil-chips" class="mt-2 flex flex-wrap gap-1"></div>
+      <p class="quote-italic mt-3 max-w-xl">"El éxito no es el final, el fracaso no es fatal: es el coraje para continuar lo que cuenta."</p>
+      <div id="pending-container" class="mt-3 flex flex-wrap gap-2"></div>
+    </div>
+    <button class="flex items-center gap-2 px-5 py-3 bg-primary text-white rounded-xl text-sm font-bold shadow-lg hover:-translate-y-0.5 transition-all flex-shrink-0" onclick="openModal('modal-nota')">
+      <span class="material-symbols-outlined" style="font-size:18px">add</span> Nueva Nota
+    </button>
+  </header>
+
+  <!-- MOOD + PENDIENTES SIDE BY SIDE -->
+  <div class="grid grid-cols-1 md:grid-cols-12 gap-5 mb-5">
+
+    <!-- PENDIENTES - LEFT -->
+    <div class="md:col-span-5 glass-card rounded-xl p-5" style="border-left:4px solid var(--primary);background:linear-gradient(135deg,rgba(75,90,156,0.08),rgba(121,134,203,0.05))">
+      <div class="flex items-center gap-2 mb-4">
+        <div style="background:rgba(75,90,156,0.12);padding:8px;border-radius:12px"><span class="material-symbols-outlined text-primary" style="font-size:20px">priority_high</span></div>
+        <div>
+          <div class="font-bold" style="font-family:'Fredoka',sans-serif;font-size:17px">Pendientes Detectados</div>
+          <div style="font-size:12px;color:var(--text-sub)">La IA identificó estos puntos críticos</div>
+        </div>
+      </div>
+      <div id="pending-items-main" class="flex flex-col gap-2"></div>
+    </div>
+
+    <!-- MOOD - RIGHT -->
+    <div class="md:col-span-7 glass-card rounded-xl p-5" style="background:linear-gradient(135deg,rgba(165,180,252,0.12),rgba(220,213,253,0.12))">
+      <div class="flex items-center gap-3 mb-4">
+        <div style="background:rgba(255,255,255,0.7);padding:8px;border-radius:14px;box-shadow:0 2px 8px rgba(75,90,156,0.1)"><span class="material-symbols-outlined text-primary" style="font-size:20px">auto_awesome</span></div>
+        <div>
+          <div class="font-bold" style="font-family:'Fredoka',sans-serif;font-size:17px">¿Cómo te sientes hoy?</div>
+          <div style="font-size:12px;color:var(--text-sub)">Selecciona tu emoción actual</div>
+        </div>
+      </div>
+      <div class="flex gap-2 flex-wrap justify-center mb-3">
+        <button class="mood-btn" onclick="selectMood(this,'Triste')"><div class="emoji-wrap" style="background:linear-gradient(135deg,#1e3a8a,#3b82f6)">😢</div><span class="mood-label">Triste</span></button>
+        <button class="mood-btn" onclick="selectMood(this,'Ansioso')"><div class="emoji-wrap" style="background:linear-gradient(135deg,#7c2d12,#f97316)">😰</div><span class="mood-label">Ansioso</span></button>
+        <button class="mood-btn" onclick="selectMood(this,'Normal')"><div class="emoji-wrap" style="background:linear-gradient(135deg,#374151,#9ca3af)">😐</div><span class="mood-label">Normal</span></button>
+        <button class="mood-btn" onclick="selectMood(this,'Bien')"><div class="emoji-wrap" style="background:linear-gradient(135deg,#b45309,#fbbf24)">😊</div><span class="mood-label">Bien</span></button>
+        <button class="mood-btn" onclick="selectMood(this,'Feliz')"><div class="emoji-wrap" style="background:linear-gradient(135deg,#065f46,#34d399)">😄</div><span class="mood-label">Feliz</span></button>
+        <button class="mood-btn" onclick="selectMood(this,'Motivado')"><div class="emoji-wrap" style="background:linear-gradient(135deg,#6b21a8,#c084fc)">🔥</div><span class="mood-label">Motivado</span></button>
+        <button class="mood-btn" onclick="selectMood(this,'Genial')"><div class="emoji-wrap" style="background:linear-gradient(135deg,#9f1239,#f43f5e)">🤩</div><span class="mood-label">Genial</span></button>
+      </div>
+      <!-- Intensity - compact -->
+      <div id="mood-intensity-section" style="display:none">
+        <div style="background:rgba(255,255,255,0.5);border-radius:12px;padding:10px 14px;border:1px solid rgba(255,255,255,0.6)">
+          <div class="flex items-center justify-between mb-1">
+            <span style="font-size:12px;font-weight:700;color:var(--text)">Intensidad: <strong id="mood-name-label">—</strong></span>
+            <span class="text-primary font-bold" style="font-family:'Fredoka',sans-serif;font-size:18px" id="mood-pct">50%</span>
+          </div>
+          <input type="range" id="mood-slider" min="1" max="100" value="50" style="width:100%;accent-color:#4b5a9c;cursor:pointer;height:4px" oninput="updateMoodIntensity(this.value)"/>
+          <div class="mood-intensity-bar mt-2" style="height:6px"><div class="mood-intensity-fill" id="mood-fill" style="width:50%"></div></div>
+        </div>
+        <!-- MOTIVATIONAL MESSAGE -->
+        <div id="mood-msg" class="mood-motivational" style="display:none">
+          <span style="font-size:22px" id="mood-msg-emoji">💪</span>
+          <span id="mood-msg-text" style="font-size:13px;color:var(--text)"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
+    <div class="md:col-span-8 glass-card rounded-xl p-6 relative overflow-hidden">
+      <div style="position:absolute;top:0;right:0;width:180px;height:180px;background:rgba(165,180,252,0.12);filter:blur(40px);border-radius:50%;z-index:0"></div>
+      <div class="flex items-center justify-between mb-5" style="position:relative;z-index:1">
+        <div class="flex items-center gap-2.5">
+          <div style="background:var(--surface-container);padding:8px;border-radius:12px"><span class="material-symbols-outlined text-primary">insights</span></div>
+          <h2 class="text-xl" style="font-family:'Fredoka',sans-serif;color:var(--text)">Resumen de Inteligencia</h2>
+        </div>
+        <span style="padding:4px 12px;background:var(--surface-high);color:var(--primary);font-size:11px;font-weight:700;border-radius:999px">Actualizado hace 5m</span>
+      </div>
+      <div style="padding:14px;border-radius:12px;background:var(--surface-low);border:1px solid var(--outline-v);opacity:0.7;margin-bottom:16px">
+        <p style="font-size:13px;color:var(--text-sub);font-style:italic">"Se han identificado patrones de riesgo basados en tus últimas notas del curso con menor desempeño."</p>
+      </div>
+      <div class="grid grid-cols-3 gap-3">
+        <div style="padding:14px;background:var(--card-bg);border-radius:12px;border:1px solid var(--card-border)"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--outline);margin-bottom:6px">Sentimiento</div><div class="flex items-center gap-1.5 text-primary font-bold" style="font-size:13px"><span class="material-symbols-outlined" style="font-size:16px">sentiment_satisfied</span>Positivo (82%)</div></div>
+        <div style="padding:14px;background:var(--card-bg);border-radius:12px;border:1px solid var(--card-border)"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--outline);margin-bottom:6px">Urgencia</div><div class="flex items-center gap-1.5 font-bold" style="font-size:13px;color:#ba1a1a"><span class="material-symbols-outlined" style="font-size:16px">priority_high</span>3 Pendientes</div></div>
+        <div style="padding:14px;background:var(--card-bg);border-radius:12px;border:1px solid var(--card-border)"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--outline);margin-bottom:6px">Promedio IA</div><div class="flex items-center gap-1.5 font-bold" style="font-size:13px;color:var(--text-sub)" id="inicio-promedio-ia"><span class="material-symbols-outlined" style="font-size:16px">grade</span>—</div></div>
+      </div>
+    </div>
+    <div class="md:col-span-4 glass-card rounded-xl p-6 flex flex-col items-center text-center">
+      <div class="flex items-center gap-2 mb-4 self-start">
+        <span class="material-symbols-outlined text-primary">target</span>
+        <h3 class="text-xl" style="font-family:'Fredoka',sans-serif;color:var(--text)">Meta Semanal</h3>
+      </div>
+      <div style="position:relative;width:120px;height:120px;display:flex;align-items:center;justify-content:center;margin-bottom:14px">
+        <svg style="width:100%;height:100%;transform:rotate(-90deg)" viewBox="0 0 130 130">
+          <circle cx="65" cy="65" r="54" fill="transparent" stroke="rgba(165,180,252,0.2)" stroke-width="10"/>
+          <circle cx="65" cy="65" r="54" fill="transparent" stroke="#4b5a9c" stroke-width="10" stroke-dasharray="339.3" stroke-dashoffset="135.7" stroke-linecap="round"/>
+        </svg>
+        <div style="position:absolute;font-family:'Fredoka',sans-serif;font-size:24px;font-weight:700;color:var(--primary)">60%</div>
+      </div>
+      <p style="font-size:13px;color:var(--text-sub);font-weight:600;margin-bottom:14px">Completar 5 notas de apoyo</p>
+      <button style="padding:8px 20px;border-radius:999px;background:rgba(75,90,156,0.1);color:var(--primary);border:1px solid rgba(75,90,156,0.2);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.2s" onclick="openModal('modal-meta')">
+        <span class="material-symbols-outlined" style="font-size:16px">add</span>Agregar Meta
+      </button>
+    </div>
+    <div class="md:col-span-12 glass-card rounded-xl p-6">
+      <h3 class="text-xl mb-4" style="font-family:'Fredoka',sans-serif;color:var(--text)">Acciones Rápidas</h3>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div style="padding:14px;border-radius:16px;background:rgba(95,90,124,0.1);border:1px solid rgba(95,90,124,0.2);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;transition:all 0.2s" onclick="showPage('apoyo')" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'"><span class="material-symbols-outlined text-secondary" style="font-size:24px">support_agent</span><span style="font-size:12px;font-weight:700;color:var(--text-sub)">Asistencia</span></div>
+        <div style="padding:14px;border-radius:16px;background:rgba(75,90,156,0.08);border:1px solid rgba(75,90,156,0.15);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;transition:all 0.2s" onclick="exportPDF()" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'"><span class="material-symbols-outlined text-primary" style="font-size:24px">description</span><span style="font-size:12px;font-weight:700;color:var(--text-sub)">Exportar PDF</span></div>
+        <div style="padding:14px;border-radius:16px;background:rgba(87,96,101,0.08);border:1px solid rgba(87,96,101,0.15);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;transition:all 0.2s" onclick="showPage('notas')" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'"><span class="material-symbols-outlined text-tertiary" style="font-size:24px">grade</span><span style="font-size:12px;font-weight:700;color:var(--text-sub)">Mis Materias</span></div>
+        <div style="padding:14px;border-radius:16px;background:var(--surface-container);border:1px solid var(--outline-v);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;transition:all 0.2s" onclick="showToast('Historial próximamente','history')" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'"><span class="material-symbols-outlined" style="font-size:24px;color:var(--outline)">history</span><span style="font-size:12px;font-weight:700;color:var(--text-sub)">Historial</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PAGE: ALERTAS ══ -->
+<div class="page pt-24 pb-12 px-6 max-w-6xl mx-auto w-full" id="page-alertas">
+  <div class="flex flex-wrap items-end justify-between gap-4 mb-8">
+    <div>
+      <h1 class="text-primary font-bold" style="font-family:'Fredoka',sans-serif;font-size:clamp(32px,5vw,48px)">Tus Alertas</h1>
+      <p style="color:var(--text-sub);font-size:13px;margin-top:4px">Mantente al tanto de tu progreso académico y avisos del sistema.</p>
+    </div>
+    <div class="flex gap-2 flex-wrap">
+      <button style="padding:6px 16px;background:var(--primary);color:white;border-radius:999px;font-size:12px;font-weight:700;border:none;cursor:pointer" onclick="filterAlerts('todas',this)">Todas</button>
+      <button style="padding:6px 16px;background:var(--card-bg);color:var(--text-sub);border-radius:999px;font-size:12px;font-weight:700;border:1px solid var(--outline-v);cursor:pointer" onclick="filterAlerts('urgentes',this)">Urgentes</button>
+      <button style="padding:6px 16px;background:var(--card-bg);color:var(--text-sub);border-radius:999px;font-size:12px;font-weight:700;border:1px solid var(--outline-v);cursor:pointer" onclick="filterAlerts('academicas',this)">Académicas</button>
+      <button style="padding:6px 16px;background:var(--card-bg);color:var(--text-sub);border-radius:999px;font-size:12px;font-weight:700;border:1px solid var(--outline-v);cursor:pointer" onclick="filterAlerts('sistema',this)">Sistema</button>
+    </div>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-5 items-start">
+    <div class="md:col-span-2 flex flex-col gap-4">
+      <div class="alert-card glass-card" data-type="urgentes" style="border-left:4px solid #ba1a1a">
+        <div style="padding:12px;border-radius:12px;background:rgba(186,26,26,0.08);flex-shrink:0"><span class="material-symbols-outlined text-error" style="font-size:28px;font-variation-settings:'FILL' 1">event_busy</span></div>
+        <div class="flex-1">
+          <div class="flex justify-between items-start mb-1.5">
+            <h3 class="text-lg" style="font-family:'Fredoka',sans-serif;color:var(--text)">Alerta de Inasistencia Consecutiva</h3>
+            <span style="padding:2px 10px;background:#ffdad6;color:#ba1a1a;font-size:11px;font-weight:700;border-radius:999px">URGENTE</span>
+          </div>
+          <p style="font-size:13px;color:var(--text-sub);margin-bottom:12px">Has registrado <strong>3 inasistencias consecutivas</strong>. Esto está impactando negativamente tu puntaje.</p>
+          <div class="flex gap-2">
+            <button style="padding:8px 16px;background:var(--primary);color:white;font-size:12px;font-weight:700;border-radius:10px;border:none;cursor:pointer;transition:all 0.2s" onclick="openModal('modal-justificar')">Justificar falta</button>
+            <button style="padding:8px 16px;border:1px solid var(--outline-v);color:var(--text-sub);font-size:12px;font-weight:700;border-radius:10px;background:none;cursor:pointer;transition:all 0.2s" onclick="dismissAlert(this)">Ignorar</button>
+          </div>
+        </div>
+      </div>
+      <div class="alert-card glass-card" data-type="academicas">
+        <div style="padding:12px;border-radius:12px;background:var(--surface-container);flex-shrink:0"><span class="material-symbols-outlined text-primary" style="font-size:28px">trending_down</span></div>
+        <div class="flex-1">
+          <div class="flex justify-between items-start mb-1.5">
+            <h3 class="text-lg" style="font-family:'Fredoka',sans-serif;color:var(--text)">Alerta de Rendimiento Académico</h3>
+            <span style="font-size:11px;color:var(--text-sub)">Hace 3 horas</span>
+          </div>
+          <p style="font-size:13px;color:var(--text-sub);margin-bottom:12px">Se detectó una <strong>calificación baja</strong> en tu examen parcial de Estructuras de Datos.</p>
+          <div class="flex gap-2">
+            <button style="padding:8px 16px;background:var(--primary);color:white;font-size:12px;font-weight:700;border-radius:10px;border:none;cursor:pointer" onclick="showPage('notas')">Ver materias</button>
+            <button style="padding:8px 16px;border:1px solid var(--outline-v);color:var(--text-sub);font-size:12px;font-weight:700;border-radius:10px;background:none;cursor:pointer" onclick="dismissAlert(this)">Ignorar</button>
+          </div>
+        </div>
+      </div>
+      <div class="alert-card glass-card" data-type="sistema">
+        <div style="padding:12px;border-radius:12px;background:var(--surface-container);flex-shrink:0"><span class="material-symbols-outlined text-tertiary" style="font-size:28px">timer_off</span></div>
+        <div class="flex-1">
+          <div class="flex justify-between items-start mb-1.5">
+            <h3 class="text-lg" style="font-family:'Fredoka',sans-serif;color:var(--text)">Alerta de Desconexión</h3>
+            <span style="font-size:11px;color:var(--text-sub)">Sistema</span>
+          </div>
+          <p style="font-size:13px;color:var(--text-sub);margin-bottom:12px">No has iniciado sesión en las últimas <strong>48 horas</strong>. Revisa el material nuevo.</p>
+          <button style="padding:8px 16px;border:1px solid var(--outline-v);color:var(--text-sub);font-size:12px;font-weight:700;border-radius:10px;background:none;cursor:pointer" onclick="dismissAlert(this)">Entendido</button>
+        </div>
+      </div>
+    </div>
+    <div class="flex flex-col gap-4">
+      <div class="glass-card rounded-xl p-6 text-center">
+        <h3 class="text-2xl mb-5" style="font-family:'Fredoka',sans-serif;color:var(--text)">Resumen de Riesgo</h3>
+        <div style="position:relative;width:160px;height:160px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center">
+          <svg style="width:100%;height:100%;transform:rotate(-90deg)" viewBox="0 0 200 200">
+            <circle cx="100" cy="100" r="85" fill="transparent" stroke="rgba(186,26,26,0.12)" stroke-width="16"/>
+            <circle cx="100" cy="100" r="85" fill="transparent" stroke="#ba1a1a" stroke-width="16" stroke-dasharray="534" stroke-dashoffset="133.5" stroke-linecap="round"/>
+          </svg>
+          <div style="position:absolute;text-align:center">
+            <div style="font-family:'Fredoka',sans-serif;font-size:42px;font-weight:700;color:#ba1a1a;line-height:1">75%</div>
+            <div style="font-size:11px;font-weight:700;color:var(--text-sub);text-transform:uppercase;letter-spacing:0.07em">Nivel Crítico</div>
+          </div>
+        </div>
+        <p style="font-size:13px;color:var(--text-sub);margin-bottom:16px">El sistema detecta un riesgo elevado de deserción en el bloque actual.</p>
+        <button style="width:100%;padding:12px;border-radius:12px;background:linear-gradient(135deg,#4b5a9c,#5f5a7c);color:white;font-size:13px;font-weight:700;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px" onclick="openModal('modal-chat')">
+          <span class="material-symbols-outlined" style="font-size:18px;font-variation-settings:'FILL' 1">smart_toy</span>Solicitar Apoyo IA
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PAGE: NOTAS ══ -->
+<div class="page pt-24 pb-12 px-6 max-w-6xl mx-auto w-full" id="page-notas">
+  <div class="flex flex-wrap items-end justify-between gap-4 mb-8">
+    <div>
+      <h1 class="text-primary font-bold" style="font-family:'Fredoka',sans-serif;font-size:clamp(32px,5vw,48px)">Portal de Notas</h1>
+      <p style="color:var(--text-sub);font-size:13px;margin-top:4px">Ciclo Académico 2026-1</p>
+    </div>
+    <div class="flex gap-2 items-center flex-wrap">
+      <span id="carrera-badge-notas" class="hidden" style="padding:6px 14px;background:var(--surface-container);color:var(--primary);font-size:12px;font-weight:700;border-radius:999px;align-items:center;gap:6px"></span>
+      <button style="display:flex;align-items:center;gap:6px;padding:10px 18px;background:var(--primary);color:white;border-radius:12px;font-size:13px;font-weight:700;border:none;cursor:pointer;transition:all 0.2s" onclick="agregarMateria()"><span class="material-symbols-outlined" style="font-size:17px">add</span>Agregar Materia</button>
+      <button style="display:flex;align-items:center;gap:6px;padding:10px 18px;border:1px solid var(--outline-v);color:var(--text-sub);border-radius:12px;font-size:13px;font-weight:700;background:none;cursor:pointer;transition:all 0.2s" onclick="resetMaterias()"><span class="material-symbols-outlined" style="font-size:17px">refresh</span>Reiniciar</button>
+    </div>
+  </div>
+  <div class="promedio-banner">
+    <div><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;opacity:0.8">Promedio General</div><div id="promedio-display" style="font-family:'Fredoka',sans-serif;font-size:52px;font-weight:700;line-height:1;letter-spacing:-1px">—</div></div>
+    <div class="flex gap-6 flex-wrap">
+      <div class="text-center"><div id="count-aprobadas" style="font-family:'Fredoka',sans-serif;font-size:28px;font-weight:700;line-height:1">0</div><div style="font-size:11px;opacity:0.8;font-weight:700;text-transform:uppercase;margin-top:4px">Aprobadas</div></div>
+      <div class="text-center"><div id="count-desaprobadas" style="font-family:'Fredoka',sans-serif;font-size:28px;font-weight:700;line-height:1">0</div><div style="font-size:11px;opacity:0.8;font-weight:700;text-transform:uppercase;margin-top:4px">Desaprobadas</div></div>
+      <div class="text-center"><div id="count-pendientes" style="font-family:'Fredoka',sans-serif;font-size:28px;font-weight:700;line-height:1">0</div><div style="font-size:11px;opacity:0.8;font-weight:700;text-transform:uppercase;margin-top:4px">Pendientes</div></div>
+    </div>
+  </div>
+  <div class="glass-card rounded-xl p-6 overflow-x-auto">
+    <table class="materias-table" id="materias-table">
+      <thead><tr>
+        <th style="width:36px">#</th><th>Materia</th>
+        <th style="width:110px;text-align:center">Nota</th>
+        <th style="width:130px;text-align:center">Mín. Aprobatorio</th>
+        <th style="width:130px;text-align:center">Estado</th>
+        <th style="width:44px"></th>
+      </tr></thead>
+      <tbody id="materias-tbody"></tbody>
+    </table>
+    <button class="add-materia-btn" onclick="agregarMateria()"><span class="material-symbols-outlined" style="font-size:18px">add_circle</span>Agregar nueva materia</button>
+  </div>
+</div>
+
+<!-- ══ PAGE: ASISTENCIA ══ -->
+<div class="page pt-24 pb-12 px-6 max-w-6xl mx-auto w-full" id="page-asistencia">
+  <div class="flex flex-wrap items-end justify-between gap-4 mb-8">
+    <div>
+      <h1 class="text-primary font-bold" style="font-family:'Fredoka',sans-serif;font-size:clamp(32px,5vw,48px)">Control de Asistencia</h1>
+      <p style="color:var(--text-sub);font-size:13px;margin-top:4px">Ciclo Académico 2026-1 — Haz clic en cualquier día para agregar una nota o pendiente</p>
+    </div>
+    <div class="glass-card px-5 py-4 rounded-xl flex gap-5 items-center">
+      <div class="text-center"><div style="font-size:11px;font-weight:700;color:var(--text-sub);text-transform:uppercase">Asistencias</div><div style="font-family:'Fredoka',sans-serif;font-size:28px;font-weight:700;color:#059669">124</div></div>
+      <div style="width:1px;height:36px;background:var(--outline-v)"></div>
+      <div class="text-center"><div style="font-size:11px;font-weight:700;color:var(--text-sub);text-transform:uppercase">Inasistencias</div><div style="font-family:'Fredoka',sans-serif;font-size:28px;font-weight:700;color:#be123c">4</div></div>
+      <div style="width:1px;height:36px;background:var(--outline-v)"></div>
+      <div class="text-center"><div style="font-size:11px;font-weight:700;color:var(--text-sub);text-transform:uppercase">Tardanzas</div><div style="font-family:'Fredoka',sans-serif;font-size:28px;font-weight:700;color:#b45309">6</div></div>
+    </div>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-5 items-start">
+    <div class="md:col-span-2 flex flex-col gap-5">
+      <div class="glass-card rounded-xl p-6">
+        <div class="flex justify-between items-center mb-5">
+          <h3 class="text-xl flex items-center gap-2" style="font-family:'Fredoka',sans-serif;color:var(--text)"><span class="material-symbols-outlined text-primary">calendar_month</span>Registro Mensual — Mayo 2026</h3>
+        </div>
+        <div class="grid gap-2 mb-4" style="grid-template-columns:repeat(7,1fr)">
+          <div style="text-align:center;font-size:11px;font-weight:700;color:var(--outline);padding-bottom:4px">LUN</div><div style="text-align:center;font-size:11px;font-weight:700;color:var(--outline);padding-bottom:4px">MAR</div><div style="text-align:center;font-size:11px;font-weight:700;color:var(--outline);padding-bottom:4px">MIÉ</div><div style="text-align:center;font-size:11px;font-weight:700;color:var(--outline);padding-bottom:4px">JUE</div><div style="text-align:center;font-size:11px;font-weight:700;color:var(--outline);padding-bottom:4px">VIE</div><div style="text-align:center;font-size:11px;font-weight:700;color:var(--outline);padding-bottom:4px">SÁB</div><div style="text-align:center;font-size:11px;font-weight:700;color:var(--outline);padding-bottom:4px">DOM</div>
+          <div class="cal-day empty">28</div><div class="cal-day empty">29</div><div class="cal-day empty">30</div>
+          <div class="cal-day present" onclick="openCalNote(1)">1</div><div class="cal-day present" onclick="openCalNote(2)">2</div><div class="cal-day future" onclick="openCalNote(3)">3</div><div class="cal-day future" onclick="openCalNote(4)">4</div>
+          <div class="cal-day present" onclick="openCalNote(5)">5</div><div class="cal-day present" onclick="openCalNote(6)">6</div><div class="cal-day absent" onclick="openCalNote(7)">7</div><div class="cal-day present" onclick="openCalNote(8)">8</div><div class="cal-day late today" onclick="openCalNote(9)">9</div><div class="cal-day future" onclick="openCalNote(10)">10</div><div class="cal-day future" onclick="openCalNote(11)">11</div>
+          <div class="cal-day future" onclick="openCalNote(12)">12</div><div class="cal-day future today" onclick="openCalNote(13)">13</div><div class="cal-day future" onclick="openCalNote(14)">14</div><div class="cal-day future" onclick="openCalNote(15)">15</div><div class="cal-day future" onclick="openCalNote(16)">16</div><div class="cal-day future" onclick="openCalNote(17)">17</div><div class="cal-day future" onclick="openCalNote(18)">18</div>
+          <div class="cal-day future" onclick="openCalNote(19)">19</div><div class="cal-day future" onclick="openCalNote(20)">20</div><div class="cal-day future" onclick="openCalNote(21)">21</div><div class="cal-day future" onclick="openCalNote(22)">22</div><div class="cal-day future" onclick="openCalNote(23)">23</div><div class="cal-day future" onclick="openCalNote(24)">24</div><div class="cal-day future" onclick="openCalNote(25)">25</div>
+          <div class="cal-day future" onclick="openCalNote(26)">26</div><div class="cal-day future" onclick="openCalNote(27)">27</div><div class="cal-day future" onclick="openCalNote(28)">28</div><div class="cal-day future" onclick="openCalNote(29)">29</div><div class="cal-day future" onclick="openCalNote(30)">30</div><div class="cal-day future" onclick="openCalNote(31)">31</div>
+        </div>
+        <div class="flex gap-5 pt-3 border-t flex-wrap" style="border-color:var(--outline-v)">
+          <div class="flex items-center gap-1.5 text-sm"><div style="width:12px;height:12px;border-radius:50%;background:#059669"></div>Asistido</div>
+          <div class="flex items-center gap-1.5 text-sm"><div style="width:12px;height:12px;border-radius:50%;background:#be123c"></div>Inasistencia</div>
+          <div class="flex items-center gap-1.5 text-sm"><div style="width:12px;height:12px;border-radius:50%;background:#b45309"></div>Tardanza</div>
+          <div class="flex items-center gap-1.5 text-sm"><div style="width:10px;height:10px;border-radius:50%;background:var(--primary)"></div>Con nota/pendiente</div>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-3.5">
+        <div class="glass-card p-5 rounded-xl" style="border-left:4px solid #059669"><div class="flex justify-between items-start mb-3"><div style="width:40px;height:40px;border-radius:12px;background:rgba(75,90,156,0.1);display:flex;align-items:center;justify-content:center"><span class="material-symbols-outlined text-primary">code</span></div><div class="text-right"><div style="font-family:'Fredoka',sans-serif;font-size:30px;font-weight:700;color:#059669;line-height:1">95%</div><div style="font-size:11px;font-weight:700;color:var(--text-sub);text-transform:uppercase">Asistencia</div></div></div><div class="font-bold text-sm">Estructuras de Datos</div><div class="flex justify-between items-center mt-1"><span style="font-size:12px;color:var(--text-sub)">18/20 Sesiones</span><span style="padding:3px 10px;background:rgba(16,185,129,0.1);color:#059669;font-size:11px;font-weight:700;border-radius:999px">Óptimo</span></div></div>
+        <div class="glass-card p-5 rounded-xl" style="border-left:4px solid #b45309"><div class="flex justify-between items-start mb-3"><div style="width:40px;height:40px;border-radius:12px;background:rgba(95,90,124,0.1);display:flex;align-items:center;justify-content:center"><span class="material-symbols-outlined text-secondary">calculate</span></div><div class="text-right"><div style="font-family:'Fredoka',sans-serif;font-size:30px;font-weight:700;color:#b45309;line-height:1">88%</div><div style="font-size:11px;font-weight:700;color:var(--text-sub);text-transform:uppercase">Asistencia</div></div></div><div class="font-bold text-sm">Cálculo IV</div><div class="flex justify-between items-center mt-1"><span style="font-size:12px;color:var(--text-sub)">14/16 Sesiones</span><span style="padding:3px 10px;background:rgba(245,158,11,0.1);color:#b45309;font-size:11px;font-weight:700;border-radius:999px">Regular</span></div></div>
+        <div class="glass-card p-5 rounded-xl" style="border-left:4px solid #be123c"><div class="flex justify-between items-start mb-3"><div style="width:40px;height:40px;border-radius:12px;background:rgba(186,26,26,0.08);display:flex;align-items:center;justify-content:center"><span class="material-symbols-outlined text-error">science</span></div><div class="text-right"><div style="font-family:'Fredoka',sans-serif;font-size:30px;font-weight:700;color:#be123c;line-height:1">75%</div><div style="font-size:11px;font-weight:700;color:var(--text-sub);text-transform:uppercase">Asistencia</div></div></div><div class="font-bold text-sm">Física II</div><div class="flex justify-between items-center mt-1"><span style="font-size:12px;color:var(--text-sub)">9/12 Sesiones</span><span style="padding:3px 10px;background:rgba(244,63,94,0.1);color:#be123c;font-size:11px;font-weight:700;border-radius:999px">Riesgo</span></div></div>
+        <div class="glass-card p-5 rounded-xl" style="border-left:4px solid #059669"><div class="flex justify-between items-start mb-3"><div style="width:40px;height:40px;border-radius:12px;background:rgba(87,96,101,0.08);display:flex;align-items:center;justify-content:center"><span class="material-symbols-outlined text-tertiary">translate</span></div><div class="text-right"><div style="font-family:'Fredoka',sans-serif;font-size:30px;font-weight:700;color:#059669;line-height:1">100%</div><div style="font-size:11px;font-weight:700;color:var(--text-sub);text-transform:uppercase">Asistencia</div></div></div><div class="font-bold text-sm">Inglés Técnico II</div><div class="flex justify-between items-center mt-1"><span style="font-size:12px;color:var(--text-sub)">20/20 Sesiones</span><span style="padding:3px 10px;background:rgba(16,185,129,0.1);color:#059669;font-size:11px;font-weight:700;border-radius:999px">Impecable</span></div></div>
+      </div>
+    </div>
+    <div class="flex flex-col gap-4">
+      <div style="border-radius:16px;padding:24px;background:#4b5a9c;color:white">
+        <h3 class="text-xl mb-3" style="font-family:'Fredoka',sans-serif">Gestión de Faltas</h3>
+        <p style="font-size:13px;opacity:0.85;margin-bottom:16px;line-height:1.6">¿Inasistencia por salud o fuerza mayor? Registra tu justificación para evitar penalizaciones.</p>
+        <button style="width:100%;padding:12px;border-radius:12px;background:white;color:#4b5a9c;font-family:'Quicksand',sans-serif;font-size:13px;font-weight:700;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px" onclick="openModal('modal-justificar')">
+          <span class="material-symbols-outlined" style="color:#4b5a9c;font-size:18px">add_circle</span>Justificar Inasistencia
+        </button>
+      </div>
+      <div class="glass-card rounded-xl p-5" style="border-top:4px solid var(--primary)">
+        <h4 class="flex items-center gap-2 font-bold mb-3.5" style="color:var(--text)"><span class="material-symbols-outlined text-primary">info</span>Información Importante</h4>
+        <ul class="flex flex-col gap-3">
+          <li class="flex items-start gap-2" style="font-size:13px;color:var(--text-sub)"><div style="width:6px;height:6px;border-radius:50%;background:var(--primary);margin-top:6px;flex-shrink:0"></div>Tienes 48 horas para presentar justificaciones.</li>
+          <li class="flex items-start gap-2" style="font-size:13px;color:var(--text-sub)"><div style="width:6px;height:6px;border-radius:50%;background:var(--primary);margin-top:6px;flex-shrink:0"></div>El límite de inasistencias es del 30% por curso.</li>
+          <li class="flex items-start gap-2" style="font-size:13px;color:var(--text-sub)"><div style="width:6px;height:6px;border-radius:50%;background:var(--primary);margin-top:6px;flex-shrink:0"></div>3 tardanzas equivalen a 1 inasistencia injustificada.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PAGE: APOYO ══ -->
+<div class="page pt-24 pb-12 px-6 max-w-6xl mx-auto w-full" id="page-apoyo">
+  <div class="mb-8"><h1 class="text-primary font-bold" style="font-family:'Fredoka',sans-serif;font-size:clamp(32px,5vw,48px)">Centro de Apoyo</h1></div>
+  <!-- IA Banner -->
+  <div class="glass-card rounded-2xl overflow-hidden mb-6" style="border:2px solid rgba(75,90,156,0.15)">
+    <div class="p-6 flex flex-wrap items-center gap-5 justify-between">
+      <div class="flex items-center gap-4">
+        <div style="background:rgba(75,90,156,0.1);padding:14px;border-radius:50%"><span class="material-symbols-outlined text-primary" style="font-size:28px">psychology</span></div>
+        <div>
+          <h2 class="text-xl mb-1" style="font-family:'Fredoka',sans-serif;color:var(--text)">Asistencia Psicológica por IA</h2>
+          <p style="font-size:13px;color:var(--text-sub);max-width:440px">Habla con nuestra IA para escucharte y ofrecerte orientación emocional en cualquier momento.</p>
+        </div>
+      </div>
+      <div class="flex gap-2.5 flex-wrap">
+        <button style="padding:12px 20px;background:var(--primary);color:white;border-radius:999px;font-size:13px;font-weight:700;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all 0.2s" onclick="openModal('modal-chat')"><span class="material-symbols-outlined" style="font-size:18px">chat</span>Iniciar conversación</button>
+      </div>
+    </div>
+    <div style="padding:10px 24px;background:rgba(75,90,156,0.05);border-top:1px solid rgba(75,90,156,0.1);display:flex;gap:20px;flex-wrap:wrap">
+      <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-sub)"><span class="material-symbols-outlined" style="font-size:16px">lock</span>Confidencial</span>
+      <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-sub)"><span class="material-symbols-outlined" style="font-size:16px">schedule</span>Disponible 24/7</span>
+      <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-sub)"><span class="material-symbols-outlined" style="font-size:16px">verified_user</span>Entorno seguro</span>
+    </div>
+  </div>
+
+  <!-- RECURSOS DE BIENESTAR -->
+  <h2 class="text-xl text-primary mb-4" style="font-family:'Fredoka',sans-serif">Recursos de Bienestar</h2>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+    <div class="glass-card p-6 rounded-xl text-center"><div style="width:56px;height:56px;background:rgba(75,90,156,0.1);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px"><span class="material-symbols-outlined text-primary" style="font-size:28px">self_improvement</span></div><h3 class="text-lg mb-2" style="font-family:'Fredoka',sans-serif;color:var(--text)">Técnicas de Estudio</h3><p style="font-size:13px;color:var(--text-sub);margin-bottom:14px">Métodos probados para optimizar tu aprendizaje y retención.</p><button style="width:100%;padding:10px;background:var(--primary);color:white;border-radius:12px;font-size:13px;font-weight:700;border:none;cursor:pointer;transition:all 0.2s" onclick="showToast('Técnicas de estudio próximamente','menu_book')">Ver guía</button></div>
+    <div class="glass-card p-6 rounded-xl text-center"><div style="width:56px;height:56px;background:rgba(95,90,124,0.1);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px"><span class="material-symbols-outlined text-secondary" style="font-size:28px">spa</span></div><h3 class="text-lg mb-2" style="font-family:'Fredoka',sans-serif;color:var(--text)">Gestión del Estrés</h3><p style="font-size:13px;color:var(--text-sub);margin-bottom:14px">Herramientas para mantener el equilibrio durante el ciclo académico.</p><button style="width:100%;padding:10px;background:var(--primary);color:white;border-radius:12px;font-size:13px;font-weight:700;border:none;cursor:pointer" onclick="showToast('Gestión del estrés próximamente','spa')">Explorar</button></div>
+    <div class="glass-card p-6 rounded-xl text-center"><div style="width:56px;height:56px;background:rgba(87,96,101,0.1);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px"><span class="material-symbols-outlined text-tertiary" style="font-size:28px">contact_support</span></div><h3 class="text-lg mb-2" style="font-family:'Fredoka',sans-serif;color:var(--text)">Orientación Académica</h3><p style="font-size:13px;color:var(--text-sub);margin-bottom:14px">Contacta con un asesor académico para planificar tu carrera.</p><button style="width:100%;padding:10px;background:var(--primary);color:white;border-radius:12px;font-size:13px;font-weight:700;border:none;cursor:pointer" onclick="showToast('Orientación próximamente','contact_support')">Contactar</button></div>
+  </div>
+
+  <!-- FOROS Y MENTORIAS -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Foros -->
+    <div class="glass-card rounded-xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl flex items-center gap-2" style="font-family:'Fredoka',sans-serif;color:var(--text)"><span class="material-symbols-outlined text-primary">forum</span>Foros Activos</h2>
+        <button style="padding:6px 14px;font-size:12px;font-weight:700;color:var(--primary);border:1px solid rgba(75,90,156,0.3);border-radius:999px;background:none;cursor:pointer;transition:all 0.2s" onclick="showToast('Ver todos los foros','forum')">Ver todos</button>
+      </div>
+      <div id="foros-list" class="flex flex-col gap-3"></div>
+    </div>
+    <!-- Mentorías -->
+    <div class="glass-card rounded-xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl flex items-center gap-2" style="font-family:'Fredoka',sans-serif;color:var(--text)"><span class="material-symbols-outlined text-secondary">school</span>Mentorías</h2>
+      </div>
+      <div style="position:relative;margin-bottom:16px">
+        <span class="material-symbols-outlined" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--outline);font-size:18px">search</span>
+        <input type="text" placeholder="Buscar mentor o materia..." style="width:100%;padding:10px 12px 10px 36px;border:1.5px solid var(--outline-v);border-radius:12px;background:var(--input-bg);color:var(--text);font-family:'Quicksand',sans-serif;font-size:13px;outline:none"/>
+      </div>
+      <div id="mentorias-list" class="flex flex-col gap-3"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PAGE: CONFIGURACIÓN ══ -->
+<div class="page pt-24 pb-12 px-6 max-w-6xl mx-auto w-full" id="page-configuracion">
+  <div class="mb-8">
+    <h1 class="text-primary font-bold" style="font-family:'Fredoka',sans-serif;font-size:clamp(32px,5vw,48px)">Configuración</h1>
+    <p style="color:var(--text-sub);font-size:13px;margin-top:4px">Administra tus preferencias personales, seguridad y apariencia.</p>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+    <div class="glass-card p-6 rounded-xl">
+      <h2 class="text-lg flex items-center gap-2 mb-4" style="font-family:'Fredoka',sans-serif;color:var(--text)"><span class="material-symbols-outlined text-primary">shield</span>Cuenta y Seguridad</h2>
+      <div class="mb-3"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-sub);margin-bottom:6px">Correo Electrónico</div><div class="info-field"><span class="material-symbols-outlined text-primary/60">mail</span><span id="config-email" style="font-size:13px;font-weight:600">usuario@ejemplo.com</span></div></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px;background:var(--surface-low);border-radius:12px;border:1px solid var(--outline-v)">
+        <div><div style="font-weight:700;font-size:13px;color:var(--text)">Verificación en dos pasos</div><div style="font-size:12px;color:var(--text-sub)">Añade seguridad extra a tu cuenta</div></div>
+        <button style="padding:8px 16px;background:var(--primary);color:white;font-size:12px;font-weight:700;border-radius:10px;border:none;cursor:pointer" onclick="showToast('2FA activado ✓','verified_user')">Activar</button>
+      </div>
+    </div>
+    <div class="glass-card p-6 rounded-xl">
+      <h2 class="text-lg flex items-center gap-2 mb-4" style="font-family:'Fredoka',sans-serif;color:var(--text)"><span class="material-symbols-outlined text-primary">palette</span>Apariencia</h2>
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-sub);margin-bottom:10px">Modo de Visualización</div>
+      <div class="grid grid-cols-2 gap-3">
+        <button id="light-btn" style="padding:16px;border-radius:12px;border:2px solid var(--primary);background:var(--surface-low);display:flex;flex-direction:column;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--primary);cursor:pointer" onclick="setTheme('light')"><span class="material-symbols-outlined" style="font-size:22px">light_mode</span>Clara</button>
+        <button id="dark-btn" style="padding:16px;border-radius:12px;border:2px solid var(--outline-v);background:none;display:flex;flex-direction:column;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--text-sub);cursor:pointer;transition:all 0.2s" onclick="setTheme('dark')"><span class="material-symbols-outlined" style="font-size:22px">dark_mode</span>Oscura</button>
+      </div>
+    </div>
+    <div class="glass-card p-6 rounded-xl">
+      <h2 class="text-lg flex items-center gap-2 mb-4" style="font-family:'Fredoka',sans-serif;color:var(--text)"><span class="material-symbols-outlined text-primary">notifications</span>Notificaciones</h2>
+      <div class="flex flex-col gap-3">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--outline-v)"><div><div style="font-weight:700;font-size:13px;color:var(--text)">Alertas de Inasistencia</div><div style="font-size:12px;color:var(--text-sub)">Notificar cuando faltes a clase</div></div><label style="position:relative;display:inline-flex;cursor:pointer"><input type="checkbox" checked style="opacity:0;position:absolute" onchange="showToast('Preferencia guardada','notifications')"/><div style="width:44px;height:24px;background:var(--primary);border-radius:999px;position:relative"><div style="position:absolute;top:2px;right:2px;width:20px;height:20px;background:white;border-radius:50%"></div></div></label></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0"><div><div style="font-weight:700;font-size:13px;color:var(--text)">Rendimiento Académico</div><div style="font-size:12px;color:var(--text-sub)">Cambios en calificaciones</div></div><label style="position:relative;display:inline-flex;cursor:pointer"><input type="checkbox" checked style="opacity:0;position:absolute" onchange="showToast('Preferencia guardada','notifications')"/><div style="width:44px;height:24px;background:var(--primary);border-radius:999px;position:relative"><div style="position:absolute;top:2px;right:2px;width:20px;height:20px;background:white;border-radius:50%"></div></div></label></div>
+      </div>
+    </div>
+    <div class="glass-card p-6 rounded-xl">
+      <h2 class="text-lg flex items-center gap-2 mb-4" style="font-family:'Fredoka',sans-serif;color:var(--text)"><span class="material-symbols-outlined text-primary">privacy_tip</span>Privacidad de la IA</h2>
+      <div style="padding:14px;background:var(--surface-container);border-radius:12px;border:1px solid rgba(75,90,156,0.15);margin-bottom:14px"><p style="font-size:13px;color:var(--text-sub);font-style:italic">"Nuestra IA utiliza tus datos académicos para generar planes de estudio personalizados y detectar riesgos temprano."</p></div>
+      <div class="flex flex-col gap-3">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer"><input type="checkbox" checked style="width:16px;height:16px;accent-color:var(--primary)" onchange="showToast('Preferencia guardada','privacy_tip')"/><div><div style="font-weight:700;font-size:13px;color:var(--text)">Uso de datos recomendaciones</div><div style="font-size:12px;color:var(--text-sub)">El algoritmo analiza tus patrones</div></div></label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer"><input type="checkbox" checked style="width:16px;height:16px;accent-color:var(--primary)" onchange="showToast('Preferencia guardada','privacy_tip')"/><div><div style="font-weight:700;font-size:13px;color:var(--text)">Anonimización estadística</div><div style="font-size:12px;color:var(--text-sub)">Datos usados para mejorar el modelo educativo</div></div></label>
+      </div>
+    </div>
+  </div>
+  <div class="flex justify-end mt-5">
+    <button style="display:flex;align-items:center;gap:8px;padding:14px 32px;background:var(--primary);color:white;border-radius:12px;font-weight:700;font-size:13px;border:none;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 16px rgba(75,90,156,0.3)" onclick="showToast('Cambios guardados exitosamente ✓','save')">
+      <span class="material-symbols-outlined" style="font-size:18px">save</span>Guardar Cambios
+    </button>
+  </div>
+</div>
+
+<!-- ══ FOOTER - simple como la imagen ══ -->
+<footer style="margin-top:auto;border-top:1px solid var(--footer-border);background:var(--footer-bg);transition:background 0.4s">
+  <div class="max-w-6xl mx-auto px-6 py-5">
+    <div class="flex items-center justify-between flex-wrap gap-3">
+      <!-- Left: brand + copyright -->
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-family:'Fredoka',sans-serif;font-size:14px;font-weight:700;color:var(--primary)">Reten IA</span>
+        <span style="font-size:12px;color:var(--text-sub)">© 2026. Todos los derechos reservados.</span>
+      </div>
+      <!-- Right: links -->
+      <div style="display:flex;align-items:center;gap:20px">
+        <a class="footer-link" onclick="showToast('Política de privacidad','policy')">Privacidad</a>
+        <a class="footer-link" onclick="showToast('Términos de uso','gavel')">Términos</a>
+        <a class="footer-link" onclick="showToast('Soporte 24/7','support_agent')">Soporte</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ── FIREBASE ──
+const firebaseConfig = {
+  apiKey:"AIzaSyDP3D7hSwTh2C-mTTVR2K3oekpcZC8rMNo",
+  authDomain:"exp3-fb4e0.firebaseapp.com",
+  projectId:"exp3-fb4e0",
+  storageBucket:"exp3-fb4e0.firebasestorage.app",
+  messagingSenderId:"674918684313",
+  appId:"1:674918684313:web:0ce12129bfd90cae66ca08"
+};
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+let currentUser = null;
+const isGuest = () => sessionStorage.getItem('guestMode') === 'true';
+
+// ── DARK MODE ──
+const html = document.documentElement;
+const savedTheme = localStorage.getItem('theme') || 'light';
+if (savedTheme === 'dark') { html.classList.add('dark'); updateDarkIcon(true); }
+
+function toggleDark() {
+  const isDark = html.classList.toggle('dark');
+  updateDarkIcon(isDark);
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  updateThemeButtons(isDark);
+}
+function setTheme(t) {
+  const isDark = t === 'dark';
+  if (isDark) html.classList.add('dark'); else html.classList.remove('dark');
+  updateDarkIcon(isDark);
+  localStorage.setItem('theme', t);
+  updateThemeButtons(isDark);
+}
+function updateDarkIcon(isDark) {
+  const icon = document.getElementById('dark-icon');
+  if (icon) icon.textContent = isDark ? 'light_mode' : 'dark_mode';
+  const btn = document.getElementById('dark-toggle-profile');
+  if (btn) btn.textContent = isDark ? 'Desactivar' : 'Activar';
+}
+function updateThemeButtons(isDark) {
+  const lb = document.getElementById('light-btn'), db2 = document.getElementById('dark-btn');
+  if (!lb) return;
+  lb.style.borderColor = isDark ? 'var(--outline-v)' : 'var(--primary)';
+  lb.style.color = isDark ? 'var(--text-sub)' : 'var(--primary)';
+  db2.style.borderColor = isDark ? 'var(--primary)' : 'var(--outline-v)';
+  db2.style.color = isDark ? 'var(--primary)' : 'var(--text-sub)';
+}
+
+// ── AUTH ──
+auth.onAuthStateChanged(async user => {
+  if (!user && !isGuest()) { window.location.href = 'index.html'; return; }
+  currentUser = user;
+  if (user && user.isAnonymous) sessionStorage.setItem('guestMode','true');
+  if (isGuest()) { setupGuestMode(); }
+  else { updateUserUI(user); await loadPerfilEstudiantil(user.uid); }
+  renderMaterias();
+  renderPendingItems();
+  renderForosYMentorias('default');
+  updateThemeButtons(html.classList.contains('dark'));
+});
+
+// ── GUEST ──
+function setupGuestMode() {
+  const nombre = sessionStorage.getItem('guestNombre') || 'Invitado';
+  const ciclo = sessionStorage.getItem('guestCiclo') || '';
+  const carrera = sessionStorage.getItem('guestCarrera') || '';
+  const banner = document.getElementById('guest-banner-inicio');
+  if (banner) banner.style.display = 'flex';
+  const firstName = nombre.split(' ')[0];
+  document.getElementById('welcome-title').textContent = `Hola, ${firstName} 👋`;
+  updateUserUI({ displayName: nombre, email:'invitado@retenIA.web', photoURL:null });
+  if (ciclo) { const el=document.getElementById('perfil-ciclo'); if(el) el.value=ciclo; }
+  if (carrera) { const el=document.getElementById('perfil-carrera'); if(el) el.value=carrera; }
+  document.getElementById('info-ciclo').textContent = ciclo ? `${ciclo} Ciclo` : 'Sin especificar';
+  document.getElementById('info-carrera').textContent = carrera || 'Sin especificar';
+  const ce = document.getElementById('config-email'); if(ce) ce.textContent='invitado@retenIA.web';
+  actualizarChipsInicio(ciclo, carrera);
+  if (carrera) { materiasData = getCarreraMaterias(carrera); renderForosYMentorias(carrera); }
+}
+
+function updateUserUI(user) {
+  const name = user.displayName || 'Estudiante';
+  const photo = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=4b5a9c&color=fff`;
+  const firstName = name.split(' ')[0];
+  document.getElementById('nav-avatar').src = photo;
+  // Only set welcome title for non-guest (guest sets their own)
+  if (!isGuest()) {
+    const isNew = !sessionStorage.getItem('visited');
+    document.getElementById('welcome-title').textContent = isNew ? `Hola, ${firstName} 👋` : `Hola de nuevo, ${firstName} 👨‍🎓`;
+    sessionStorage.setItem('visited','1');
+  }
+  document.getElementById('perfil-foto').src = photo;
+  document.getElementById('perfil-nombre').textContent = name;
+  document.getElementById('perfil-email').textContent = user.email || '';
+  const ce = document.getElementById('config-email'); if(ce) ce.textContent = user.email || '—';
+}
+
+// ── AVATAR ──
+function handleAvatarUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const d = e.target.result;
+    document.getElementById('perfil-foto').src = d;
+    document.getElementById('nav-avatar').src = d;
+    try { sessionStorage.setItem('customAvatar',d); } catch(e){}
+    showToast('Foto de perfil actualizada ✓','photo_camera');
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── PROFILE PANEL ──
+function openProfilePanel() { document.getElementById('profile-panel-overlay').classList.add('open'); }
+function closeProfilePanel() { document.getElementById('profile-panel-overlay').classList.remove('open'); }
+function closePanelIfBg(e) { if(e.target===document.getElementById('profile-panel-overlay')) closeProfilePanel(); }
+
+// ── PERFIL ESTUDIANTIL ──
+async function loadPerfilEstudiantil(uid) {
+  try {
+    const doc = await db.collection('usuarios').doc(uid).get();
+    if (doc.exists) {
+      const d = doc.data();
+      const ciclo = d.ciclo||'', carrera = d.carrera||'';
+      if(ciclo) document.getElementById('perfil-ciclo').value = ciclo;
+      if(carrera) document.getElementById('perfil-carrera').value = carrera;
+      document.getElementById('info-ciclo').textContent = ciclo ? `${ciclo} Ciclo` : 'Sin especificar';
+      document.getElementById('info-carrera').textContent = carrera || 'Sin especificar';
+      actualizarChipsInicio(ciclo, carrera);
+      if(carrera) { materiasData = getCarreraMaterias(carrera); renderForosYMentorias(carrera); }
+      if(d.materias && d.materias.length > 0) materiasData = d.materias;
+    }
+  } catch(e) { console.warn(e); }
+}
+
+function onCarreraChange() {
+  const carrera = document.getElementById('perfil-carrera').value;
+  if (carrera && confirm(`¿Actualizar las materias según "${carrera}"?`)) {
+    materiasData = getCarreraMaterias(carrera);
+    renderMaterias(); guardarMateriasFB();
+    renderForosYMentorias(carrera);
+    showToast(`Materias cargadas para ${carrera} ✓`,'school');
+  }
+  guardarPerfilEstudiantil();
+}
+
+async function guardarPerfilEstudiantil() {
+  const ciclo = document.getElementById('perfil-ciclo').value;
+  const carrera = document.getElementById('perfil-carrera').value;
+  document.getElementById('info-ciclo').textContent = ciclo ? `${ciclo} Ciclo` : 'Sin especificar';
+  document.getElementById('info-carrera').textContent = carrera || 'Sin especificar';
+  actualizarChipsInicio(ciclo, carrera);
+  if (isGuest()) { sessionStorage.setItem('guestCiclo',ciclo); sessionStorage.setItem('guestCarrera',carrera); return; }
+  if (currentUser) {
+    try {
+      await db.collection('usuarios').doc(currentUser.uid).set({ ciclo:ciclo||null, carrera:carrera||null, updatedAt:firebase.firestore.FieldValue.serverTimestamp() },{merge:true});
+      showToast('Perfil actualizado ✓','save');
+    } catch(e) { console.warn(e); }
+  }
+}
+
+function actualizarChipsInicio(ciclo, carrera) {
+  const c = document.getElementById('perfil-chips');
+  if (!c) return;
+  c.innerHTML = '';
+  if (ciclo) c.innerHTML += `<span class="perfil-chip"><span class="material-symbols-outlined" style="font-size:15px">school</span>${ciclo} Ciclo</span>`;
+  if (carrera) c.innerHTML += `<span class="perfil-chip"><span class="material-symbols-outlined" style="font-size:15px">engineering</span>${carrera}</span>`;
+}
+
+async function confirmLogout() {
+  if (confirm('¿Estás seguro que deseas cerrar sesión?')) {
+    sessionStorage.clear();
+    if (currentUser) await auth.signOut();
+    window.location.href = 'index.html';
+  }
+}
+
+// ── CARRERAS ──
+const CARRERAS_CURSOS = {
+  'Ingeniería de Sistemas':['Cálculo Diferencial','Álgebra Lineal','Programación I','Física I','Intro. Ingeniería','Comunicación Escrita'],
+  'Ingeniería Civil':['Cálculo Diferencial','Álgebra Lineal','Física I','Química General','Dibujo Técnico','Intro. Ingeniería Civil'],
+  'Ingeniería Industrial':['Cálculo Diferencial','Álgebra Lineal','Física I','Química General','Estadística I','Economía General'],
+  'Administración':['Intro. Administración','Matemática Básica','Contabilidad I','Economía General','Derecho Empresarial','Comunicación Organizacional'],
+  'Medicina':['Anatomía I','Biología Celular','Química Orgánica','Embriología','Fisiología I','Histología'],
+  'Psicología':['Intro. Psicología','Neurociencias Básicas','Estadística I','Metodología','Psicología del Desarrollo','Comunicación Interpersonal'],
+  'Derecho':['Intro. Derecho','Historia del Derecho','Derecho Constitucional','Lógica Jurídica','Sociología Jurídica','Comunicación Jurídica'],
+  'Otra':['Materia 1','Materia 2','Materia 3','Materia 4','Materia 5','Materia 6'],
+};
+function getCarreraMaterias(carrera) {
+  const cursos = CARRERAS_CURSOS[carrera] || CARRERAS_CURSOS['Otra'];
+  return cursos.map((n,i) => ({id:i+1,nombre:n,nota:'',min:11}));
+}
+
+// ── FOROS Y MENTORIAS ──
+const FOROS = {
+  'Ingeniería de Sistemas':[{icon:'💻',tema:'Estrategias para Programación I',area:'Computación',p:42},{icon:'📐',tema:'Cómo aprobar Cálculo',area:'Matemáticas',p:38},{icon:'🔗',tema:'Club de Algoritmos',area:'Sistemas',p:29}],
+  'Medicina':[{icon:'🫀',tema:'Lab de Anatomía I',area:'Medicina',p:67},{icon:'🔬',tema:'Histología — Repaso',area:'Biología',p:44},{icon:'💊',tema:'Club de Lectura Científica',area:'Humanidades',p:89}],
+  'default':[{icon:'📚',tema:'Estrategias para el ciclo actual',area:'General',p:42},{icon:'🧑‍🤝‍🧑',tema:'Grupo de estudio',area:'Colaboración',p:28},{icon:'📖',tema:'Club de Lectura',area:'Humanidades',p:89}]
+};
+const MENTORIAS = {
+  'Ingeniería de Sistemas':[
+    {nombre:'Dra. Sofía Ramos',materia:'Programación I',tipo:'Meet · Individual',hora:'3:00 PM · Martes',color:'#4b5a9c'},
+    {nombre:'Lic. Carlos Vega',materia:'Álgebra Lineal',tipo:'Zoom · Grupal',hora:'10:30 AM · Miércoles',color:'#5f5a7c'},
+    {nombre:'Mg. Ana Torres',materia:'Cálculo Diferencial',tipo:'Presencial',hora:'5:00 PM · Jueves',color:'#7986cb'},
+  ],
+  'Medicina':[
+    {nombre:'Dr. Miguel Torres',materia:'Anatomía I',tipo:'Meet · Individual',hora:'3:00 PM · Martes',color:'#be123c'},
+    {nombre:'Dra. Laura Paz',materia:'Fisiología I',tipo:'Teams · Grupal',hora:'9:00 AM · Miércoles',color:'#059669'},
+  ],
+  'default':[
+    {nombre:'Lic. Ana García',materia:'Materia Principal',tipo:'Meet · Individual',hora:'4:00 PM · Martes',color:'#4b5a9c'},
+    {nombre:'Mg. Javier Ruiz',materia:'Curso de Apoyo',tipo:'Zoom · Grupal',hora:'10:30 AM · Miércoles',color:'#5f5a7c'},
+    {nombre:'Dra. María López',materia:'Asesoría General',tipo:'Presencial',hora:'5:00 PM · Jueves',color:'#7986cb'},
+  ]
+};
+
+function renderForosYMentorias(carrera) {
+  const foros = FOROS[carrera] || FOROS['default'];
+  const mentorias = MENTORIAS[carrera] || MENTORIAS['default'];
+  const fl = document.getElementById('foros-list');
+  const ml = document.getElementById('mentorias-list');
+  if (!fl || !ml) return;
+  fl.innerHTML = foros.map(f => `
+    <div class="foro-card" onclick="showToast('Uniéndote: ${f.tema}','forum')">
+      <div style="width:40px;height:40px;border-radius:12px;background:rgba(75,90,156,0.1);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">${f.icon}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:13px;color:var(--text);line-height:1.3">${f.tema}</div>
+        <div style="font-size:12px;color:var(--primary);font-weight:600;margin-top:2px">${f.area} · ${f.p} participantes</div>
+      </div>
+      <span class="material-symbols-outlined" style="color:var(--outline);font-size:18px">chevron_right</span>
+    </div>`).join('');
+  ml.innerHTML = mentorias.map(m => `
+    <div class="mentor-card" onclick="showToast('Solicitando mentoría con ${m.nombre}','school')">
+      <div style="width:44px;height:44px;border-radius:50%;background:${m.color};display:flex;align-items:center;justify-content:center;color:white;font-family:'Fredoka',sans-serif;font-weight:700;font-size:16px;flex-shrink:0">${m.nombre.charAt(0)}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:13px;color:var(--text)">${m.materia}</div>
+        <div style="font-size:12px;color:var(--text-sub);display:flex;align-items:center;gap:8px;margin-top:2px">
+          <span style="background:rgba(75,90,156,0.1);color:var(--primary);padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700">${m.tipo}</span>
+          <span>⏰ ${m.hora}</span>
+        </div>
+      </div>
+      <span style="padding:4px 10px;font-size:11px;font-weight:700;border-radius:999px;background:rgba(75,90,156,0.1);color:var(--primary);flex-shrink:0">Unirse</span>
+    </div>`).join('');
+}
+
+// ── PENDING ITEMS ──
+function renderPendingItems() {
+  const items = [
+    {label:'3 inasistencias consecutivas',color:'#ba1a1a',bg:'rgba(186,26,26,0.08)'},
+    {label:'Examen parcial pendiente en Física',color:'#b45309',bg:'rgba(245,158,11,0.08)'},
+    {label:'Foro de bienvenida sin completar',color:'#4b5a9c',bg:'rgba(75,90,156,0.08)'},
+  ];
+  const container = document.getElementById('pending-items-main');
+  if (!container) return;
+  container.innerHTML = items.map(p => `
+    <div class="pending-item" style="background:${p.bg}">
+      <div class="pending-dot" style="background:${p.color}"></div>
+      <span style="color:${p.color};font-size:13px">${p.label}</span>
+    </div>`).join('');
+}
+
+// ── NAVIGATION ──
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  const page = document.getElementById('page-' + name);
+  if (page) page.classList.add('active');
+  const map = {inicio:0,alertas:1,notas:2,asistencia:3,apoyo:4};
+  const links = document.querySelectorAll('.nav-link');
+  if (map[name] !== undefined && links[map[name]]) links[map[name]].classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ── TOAST ──
+let toastTimer;
+function showToast(msg, icon='check_circle') {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.querySelector('.material-symbols-outlined').textContent = icon;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+// ── MODALS ──
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if(e.target===m) m.classList.remove('open'); });
+});
+
+// ── ACTIONS ──
+function submitJustificacion() { closeModal('modal-justificar'); showToast('Justificación enviada ✓','assignment_turned_in'); }
+function submitNota() { closeModal('modal-nota'); showToast('Nota guardada ✓','note_add'); }
+function submitMeta() { closeModal('modal-meta'); showToast('Meta agregada ✓','target'); }
+function exportPDF() { showToast('Generando PDF...','description'); }
+function dismissAlert(btn) {
+  const card = btn.closest('.alert-card');
+  card.style.transition='all 0.4s'; card.style.opacity='0'; card.style.transform='translateX(30px)';
+  setTimeout(() => { card.style.display='none'; showToast('Alerta descartada','check'); }, 400);
+}
+
+// ── MOOD ──
+const MOOD_MESSAGES = {
+  'Triste': { emoji:'💙', text:'Es normal sentir tristeza. Hablar con alguien de confianza puede ayudarte. También puedes chatear con nuestra IA de apoyo.' },
+  'Ansioso': { emoji:'🌬️', text:'Respira profundo. Intenta dividir tus tareas en pasos pequeños. ¡Puedes con esto, un paso a la vez!' },
+  'Normal': { emoji:'✨', text:'Un día tranquilo es una oportunidad perfecta para avanzar en tus metas. ¡Aprovéchalo!' },
+  'Bien': { emoji:'😊', text:'¡Qué bien! Mantén esa energía positiva. Es un buen momento para estudiar y rendir al máximo.' },
+  'Feliz': { emoji:'🌟', text:'¡Tu energía es contagiosa! Úsala para avanzar en esas materias pendientes. ¡Estás imparable!' },
+  'Motivado': { emoji:'🚀', text:'¡Esa motivación es tu superpoder! Canalízala hacia tus metas académicas y verás resultados increíbles.' },
+  'Genial': { emoji:'🏆', text:'¡Estás en tu mejor momento! Comparte esa energía con tus compañeros y juntos llegarán más lejos.' },
+};
+let currentMood = null;
+function selectMood(btn, mood) {
+  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  currentMood = mood;
+  document.getElementById('mood-intensity-section').style.display = 'block';
+  document.getElementById('mood-name-label').textContent = mood;
+  document.getElementById('mood-slider').value = 50;
+  updateMoodIntensity(50);
+  showToast(`Estado: ${mood} 👍`,'mood');
+}
+function updateMoodIntensity(val) {
+  const v = parseInt(val);
+  document.getElementById('mood-pct').textContent = v + '%';
+  document.getElementById('mood-fill').style.width = v + '%';
+  // Show motivational message when intensity is set (after a brief pause)
+  clearTimeout(window.moodMsgTimer);
+  window.moodMsgTimer = setTimeout(() => showMoodMessage(currentMood, v), 600);
+}
+function showMoodMessage(mood, intensity) {
+  if (!mood) return;
+  const data = MOOD_MESSAGES[mood] || { emoji:'💪', text:'¡Sigue adelante! Cada día es una nueva oportunidad.' };
+  const el = document.getElementById('mood-msg');
+  document.getElementById('mood-msg-emoji').textContent = data.emoji;
+  document.getElementById('mood-msg-text').textContent = data.text;
+  el.style.display = 'flex';
+}
+
+function selectTone(btn) {
+  document.querySelectorAll('.tone-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  showToast(`Tono IA: ${btn.textContent.trim()}`,'psychology');
+}
+
+function filterAlerts(type, btn) {
+  document.querySelectorAll('.alert-card').forEach(c => {
+    c.style.display = (type==='todas' || c.dataset.type===type) ? 'flex' : 'none';
+  });
+  btn.parentElement.querySelectorAll('button').forEach(b => {
+    b.style.background = 'var(--card-bg)'; b.style.color = 'var(--text-sub)';
+  });
+  btn.style.background = '#4b5a9c'; btn.style.color = 'white';
+}
+
+// ── CHAT ──
+const chatResponses = [
+  'Entiendo cómo te sientes. Es normal sentir presión académica. ¿Quieres hablar más?',
+  'Gracias por compartir. Pedir ayuda es una fortaleza.',
+  'Estoy aquí para apoyarte. ¿Has considerado hablar con un tutor?',
+  'Es importante cuidar tu bienestar mental tanto como tu rendimiento académico.',
+  'Cada pequeño avance cuenta. ¿Qué positivo ocurrió hoy?',
+  'Recuerda tomar descansos. El descanso es parte del aprendizaje.',
+];
+let chatIdx = 0;
+function sendChat() {
+  const input = document.getElementById('chat-input'), msg = input.value.trim();
+  if (!msg) return;
+  const msgs = document.getElementById('chat-messages');
+  const u = document.createElement('div'); u.className='chat-msg user'; u.textContent=msg;
+  msgs.appendChild(u); input.value=''; msgs.scrollTop=msgs.scrollHeight;
+  setTimeout(() => {
+    const b = document.createElement('div'); b.className='chat-msg bot';
+    b.textContent=chatResponses[chatIdx%chatResponses.length]; chatIdx++;
+    msgs.appendChild(b); msgs.scrollTop=msgs.scrollHeight;
+  },700);
+}
+
+// ── CALENDAR NOTES ──
+const calNotes = {};
+let currentCalDay = null;
+function openCalNote(day) {
+  currentCalDay = day;
+  document.getElementById('cal-note-day-label').textContent = `— ${day} de Mayo`;
+  document.getElementById('cal-note-input').value = '';
+  renderCalNotesList(day);
+  openModal('modal-cal-note');
+}
+function renderCalNotesList(day) {
+  const list = document.getElementById('cal-notes-list');
+  const notes = calNotes[day] || [];
+  if (notes.length === 0) { list.innerHTML = `<div style="font-size:12px;color:var(--text-sub);text-align:center;padding:8px">Sin notas para este día.</div>`; return; }
+  list.innerHTML = notes.map((n,i) => `
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;background:rgba(75,90,156,0.06);border:1px solid rgba(75,90,156,0.12)">
+      <span class="material-symbols-outlined text-primary" style="font-size:15px">push_pin</span>
+      <span style="flex:1;font-size:13px;color:var(--text)">${n}</span>
+      <button onclick="deleteCalNote(${day},${i})" style="border:none;background:none;cursor:pointer;color:var(--outline);padding:2px;border-radius:6px" onmouseover="this.style.color='#ba1a1a'" onmouseout="this.style.color='var(--outline)'"><span class="material-symbols-outlined" style="font-size:16px">close</span></button>
+    </div>`).join('');
+}
+function saveCalNote() {
+  const input = document.getElementById('cal-note-input');
+  const val = input.value.trim();
+  if (!val) { showToast('Escribe una nota primero','edit'); return; }
+  if (!calNotes[currentCalDay]) calNotes[currentCalDay] = [];
+  calNotes[currentCalDay].push(val);
+  input.value = '';
+  renderCalNotesList(currentCalDay);
+  // Mark calendar day
+  markCalDay(currentCalDay);
+  showToast(`Nota guardada para el día ${currentCalDay} ✓`,'note_add');
+}
+function deleteCalNote(day, idx) {
+  calNotes[day].splice(idx,1);
+  if (calNotes[day].length === 0) delete calNotes[day];
+  renderCalNotesList(day);
+  markCalDay(day);
+}
+function markCalDay(day) {
+  // Find all cal-day elements and check if they match
+  document.querySelectorAll('.cal-day:not(.empty)').forEach(el => {
+    if (el.textContent.trim() === String(day)) {
+      if (calNotes[day] && calNotes[day].length > 0) el.classList.add('has-note');
+      else el.classList.remove('has-note');
+    }
+  });
+}
+
+// ── MATERIAS ──
+let materiasData = [
+  {id:1,nombre:'Cálculo Diferencial',nota:'',min:11},
+  {id:2,nombre:'Programación I',nota:'',min:11},
+  {id:3,nombre:'Álgebra Lineal',nota:'',min:11},
+  {id:4,nombre:'Física General',nota:'',min:11},
+  {id:5,nombre:'Inglés Técnico',nota:'',min:11},
+  {id:6,nombre:'Comunicación Escrita',nota:'',min:11},
+];
+let nextId = 100;
+
+function renderMaterias() {
+  const tbody = document.getElementById('materias-tbody');
+  tbody.innerHTML='';
+  materiasData.forEach((m,idx) => {
+    const nota = m.nota==='' ? null : parseFloat(m.nota);
+    const min = parseFloat(m.min)||11;
+    let estado = 'pendiente';
+    if(nota!==null && !isNaN(nota)) estado = nota>=min ? 'aprobado' : 'desaprobado';
+    const estadoLabel = estado==='aprobado'
+      ? `<span class="estado-badge aprobado"><span class="material-symbols-outlined" style="font-size:14px;font-variation-settings:'FILL' 1">check_circle</span>Aprobado</span>`
+      : estado==='desaprobado'
+      ? `<span class="estado-badge desaprobado"><span class="material-symbols-outlined" style="font-size:14px;font-variation-settings:'FILL' 1">cancel</span>Desaprobado</span>`
+      : `<span class="estado-badge pendiente"><span class="material-symbols-outlined" style="font-size:14px">hourglass_empty</span>Pendiente</span>`;
+    const tr = document.createElement('tr');
+    tr.className=`materia-row ${estado}`;
+    tr.innerHTML=`
+      <td style="font-size:13px;font-weight:700;color:var(--outline);text-align:center">${idx+1}</td>
+      <td><div class="materia-nombre"><input type="text" value="${m.nombre}" placeholder="Nombre de la materia" onchange="updateMateria(${m.id},'nombre',this.value)"/></div></td>
+      <td style="text-align:center"><input type="number" class="nota-input ${estado!=='pendiente'?estado:''}" value="${m.nota}" min="0" max="20" step="0.1" placeholder="—" oninput="updateMateria(${m.id},'nota',this.value)"/></td>
+      <td style="text-align:center"><input type="number" class="min-input" value="${m.min}" min="0" max="20" step="0.5" oninput="updateMateria(${m.id},'min',this.value)"/></td>
+      <td style="text-align:center">${estadoLabel}</td>
+      <td style="text-align:center"><button class="del-btn" onclick="eliminarMateria(${m.id})"><span class="material-symbols-outlined" style="font-size:18px">delete</span></button></td>`;
+    tbody.appendChild(tr);
+  });
+  calcularPromedio();
+}
+
+function updateMateria(id,campo,valor) {
+  const m=materiasData.find(x=>x.id===id); if(!m) return;
+  if(campo==='nota'){const v=parseFloat(valor);m.nota=isNaN(v)?'':Math.min(20,Math.max(0,v));}
+  else if(campo==='min'){const v=parseFloat(valor);m.min=isNaN(v)?11:Math.min(20,Math.max(0,v));}
+  else m[campo]=valor;
+  renderMaterias(); guardarMateriasFB();
+}
+
+function agregarMateria() {
+  materiasData.push({id:nextId++,nombre:`Materia ${materiasData.length+1}`,nota:'',min:11});
+  renderMaterias(); guardarMateriasFB();
+  showToast('Materia agregada','add_circle');
+}
+
+function eliminarMateria(id) {
+  if(materiasData.length<=1){showToast('Debe haber al menos una materia','warning');return;}
+  materiasData=materiasData.filter(m=>m.id!==id);
+  renderMaterias(); guardarMateriasFB();
+  showToast('Materia eliminada','delete');
+}
+
+function resetMaterias() {
+  if(!confirm('¿Reiniciar todas las notas?')) return;
+  materiasData.forEach(m=>{m.nota='';});
+  renderMaterias(); guardarMateriasFB();
+  showToast('Notas reiniciadas','refresh');
+}
+
+function calcularPromedio() {
+  const conNota=materiasData.filter(m=>m.nota!==''&&!isNaN(parseFloat(m.nota)));
+  const aprobadas=conNota.filter(m=>parseFloat(m.nota)>=(parseFloat(m.min)||11)).length;
+  const desaprobadas=conNota.filter(m=>parseFloat(m.nota)<(parseFloat(m.min)||11)).length;
+  const pendientes=materiasData.length-conNota.length;
+  document.getElementById('count-aprobadas').textContent=aprobadas;
+  document.getElementById('count-desaprobadas').textContent=desaprobadas;
+  document.getElementById('count-pendientes').textContent=pendientes;
+  if(conNota.length===0){
+    document.getElementById('promedio-display').textContent='—';
+    document.getElementById('inicio-promedio-ia').innerHTML='<span class="material-symbols-outlined" style="font-size:16px">grade</span> Sin datos';
+    document.getElementById('perfil-promedio-stat').textContent='—';
+    return;
+  }
+  const suma=conNota.reduce((a,m)=>a+parseFloat(m.nota),0);
+  const prom=(suma/conNota.length).toFixed(2);
+  document.getElementById('promedio-display').textContent=prom;
+  document.getElementById('inicio-promedio-ia').innerHTML=`<span class="material-symbols-outlined" style="font-size:16px">grade</span> ${prom}`;
+  document.getElementById('perfil-promedio-stat').textContent=prom;
+}
+
+async function guardarMateriasFB() {
+  if(isGuest()||!currentUser||currentUser.isAnonymous) return;
+  try { await db.collection('usuarios').doc(currentUser.uid).set({materias:materiasData,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}); } catch(e){console.warn(e);}
+}
+
+window.addEventListener('DOMContentLoaded',()=>{
+  const saved=sessionStorage.getItem('customAvatar');
+  if(saved){document.getElementById('perfil-foto').src=saved;document.getElementById('nav-avatar').src=saved;}
+  updateThemeButtons(html.classList.contains('dark'));
+});
+</script>
+</body>
+</html>
