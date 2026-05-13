@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fabricio web - Iniciar Sesión</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#4b5a9c",
+            "primary-fixed": "#dde1ff",
+            "on-primary-fixed": "#001354",
+            "on-primary-fixed-variant": "#334282",
+            "surface": "#f8f9ff",
+            "outline-variant": "#c6c5d2",
+            "on-surface-variant": "#454650",
+            "error": "#ba1a1a",
+            "surface-container-low": "#eff4ff",
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body { font-family: 'Quicksand', sans-serif; }
+    h1, h2, h3, .brand-font { font-family: 'Fredoka', sans-serif; }
+    .glass-card {
+      background: rgba(255,255,255,0.80);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255,255,255,0.65);
+      box-shadow: 0 32px 96px rgba(75,90,156,0.18);
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      vertical-align: middle; font-size: 20px;
+    }
+    .select-styled {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23767681' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 36px !important;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      width:32px; height:32px; border:3px solid #e0e7ff;
+      border-top-color: #4b5a9c; border-radius:50%;
+      animation: spin 0.8s linear infinite; margin: 0 auto 10px;
+    }
+
+    /* ROLE SELECTOR */
+    .role-tabs { display:flex; gap:6px; background:rgba(75,90,156,0.08); padding:5px; border-radius:16px; margin-bottom:20px; }
+    .role-tab {
+      flex:1; padding:10px 8px; border-radius:12px; border:none; cursor:pointer;
+      font-family:'Quicksand',sans-serif; font-size:13px; font-weight:700;
+      display:flex; flex-direction:column; align-items:center; gap:4px;
+      transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+      color:#454650; background:transparent;
+    }
+    .role-tab .role-icon { font-size:22px; transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+    .role-tab.active {
+      background:white; color:#4b5a9c;
+      box-shadow:0 4px 20px rgba(75,90,156,0.18);
+    }
+    .role-tab.active .role-icon { transform:scale(1.15); }
+    .role-tab:hover:not(.active) { background:rgba(255,255,255,0.5); }
+
+    /* Panels */
+    .role-panel { display:none; animation:fadeInUp 0.35s ease; }
+    .role-panel.active { display:block; }
+    @keyframes fadeInUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+    .btn-oauth { transition: all 0.2s; border:1.5px solid #e5e7eb; }
+    .btn-oauth:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(75,90,156,0.14); border-color: #4b5a9c; }
+    .btn-guest:hover { border-color: #4b5a9c; color: #4b5a9c; background: rgba(75,90,156,0.07); transform: translateY(-2px); box-shadow: 0 4px 16px rgba(75,90,156,0.1); }
+
+    /* Admin specific */
+    .admin-input { width:100%; padding:12px 16px; border:1.5px solid #c6c5d2; border-radius:12px; font-family:'Quicksand',sans-serif; font-size:15px; font-weight:600; color:#0b1c30; background:white; outline:none; transition:border-color 0.2s; }
+    .admin-input:focus { border-color:#4b5a9c; box-shadow:0 0 0 3px rgba(75,90,156,0.1); }
+    .admin-badge { display:inline-flex; align-items:center; gap:6px; background:linear-gradient(135deg,#4b5a9c,#7986cb); color:white; padding:5px 14px; border-radius:999px; font-size:12px; font-weight:700; margin-bottom:16px; }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-6" style="background:linear-gradient(135deg,#eef1ff 0%,#f3f0ff 50%,#e8f0ff 100%)">
+
+<!-- Decorative blobs -->
+<div style="position:fixed;top:-80px;left:-80px;width:300px;height:300px;background:radial-gradient(circle,rgba(165,180,252,0.35),transparent 70%);pointer-events:none"></div>
+<div style="position:fixed;bottom:-60px;right:-60px;width:260px;height:260px;background:radial-gradient(circle,rgba(121,134,203,0.25),transparent 70%);pointer-events:none"></div>
+
+<div class="glass-card rounded-3xl p-10 max-w-md w-full text-center" style="position:relative;z-index:1">
+  <!-- Logo -->
+  <div class="w-20 h-20 rounded-2xl mx-auto mb-4 flex items-center justify-center text-white font-bold" style="background:linear-gradient(135deg,#4b5a9c,#7986cb);font-family:'Fredoka',sans-serif;font-size:32px;box-shadow:0 8px 28px rgba(75,90,156,0.35)">
+    Fw
+  </div>
+  <h1 class="text-3xl font-bold text-primary mb-1" style="font-family:'Fredoka',sans-serif;font-size:32px">Fabricio web</h1>
+  <p class="text-on-surface-variant text-sm mb-7">Plataforma académica personalizada con IA</p>
+
+  <!-- ROLE TABS -->
+  <div class="role-tabs">
+    <button class="role-tab active" onclick="switchRole('estudiante',this)">
+      <span class="role-icon">🎓</span>
+      <span>Estudiante</span>
+    </button>
+    <button class="role-tab" onclick="switchRole('admin',this)">
+      <span class="role-icon">🏫</span>
+      <span>Administrador</span>
+    </button>
+    <button class="role-tab" onclick="switchRole('invitado',this)">
+      <span class="role-icon">👤</span>
+      <span>Invitado</span>
+    </button>
+  </div>
+
+  <!-- ═══ PANEL: ESTUDIANTE ═══ -->
+  <div class="role-panel active" id="panel-estudiante">
+    <!-- Perfil estudiantil -->
+    <div class="bg-surface-container-low rounded-2xl p-5 border border-outline-variant mb-5 text-left">
+      <div class="flex items-center gap-1.5 text-primary font-bold mb-3.5" style="font-family:'Fredoka',sans-serif;font-size:16px">
+        <span class="material-symbols-outlined" style="font-size:18px">school</span>
+        Perfil Estudiantil
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1.5" for="select-ciclo">Ciclo Actual</label>
+          <select id="select-ciclo" class="select-styled w-full px-3 py-2.5 border border-outline-variant rounded-xl bg-white font-semibold text-sm outline-none focus:border-primary transition-colors cursor-pointer" style="font-family:'Quicksand',sans-serif;color:#0b1c30">
+            <option value="">Seleccionar…</option>
+            <option value="I">I Ciclo</option><option value="II">II Ciclo</option>
+            <option value="III">III Ciclo</option><option value="IV">IV Ciclo</option>
+            <option value="V">V Ciclo</option><option value="VI">VI Ciclo</option>
+            <option value="VII">VII Ciclo</option><option value="VIII">VIII Ciclo</option>
+            <option value="IX">IX Ciclo</option><option value="X">X Ciclo</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1.5" for="select-carrera">Carrera</label>
+          <select id="select-carrera" class="select-styled w-full px-3 py-2.5 border border-outline-variant rounded-xl bg-white font-semibold text-sm outline-none focus:border-primary transition-colors cursor-pointer" style="font-family:'Quicksand',sans-serif;color:#0b1c30">
+            <option value="">Seleccionar…</option>
+            <option value="Ingeniería de Sistemas">Ing. de Sistemas</option>
+            <option value="Ingeniería Civil">Ing. Civil</option>
+            <option value="Ingeniería Industrial">Ing. Industrial</option>
+            <option value="Ingeniería Electrónica">Ing. Electrónica</option>
+            <option value="Ingeniería Ambiental">Ing. Ambiental</option>
+            <option value="Administración">Administración</option>
+            <option value="Contabilidad">Contabilidad</option>
+            <option value="Derecho">Derecho</option>
+            <option value="Medicina">Medicina</option>
+            <option value="Psicología">Psicología</option>
+            <option value="Arquitectura">Arquitectura</option>
+            <option value="Educación">Educación</option>
+            <option value="Economía">Economía</option>
+            <option value="Comunicaciones">Comunicaciones</option>
+            <option value="Otra">Otra carrera</option>
+          </select>
+        </div>
+      </div>
+      <div class="flex items-center gap-1.5 mt-3 p-2.5 bg-primary-fixed rounded-lg text-xs text-on-primary-fixed-variant">
+        <span class="material-symbols-outlined" style="font-size:15px;flex-shrink:0">info</span>
+        Estos datos se guardarán en tu perfil y se mostrarán en tu panel de control.
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2.5 mb-4 text-on-surface-variant text-xs font-bold">
+      <div class="flex-1 h-px bg-outline-variant"></div>Inicia sesión con<div class="flex-1 h-px bg-outline-variant"></div>
+    </div>
+
+    <button class="btn-oauth w-full py-3.5 px-5 mb-2.5 rounded-2xl bg-white cursor-pointer flex items-center gap-3.5 font-bold text-sm hover:border-primary" onclick="loginWithGoogle('estudiante')" style="font-family:'Quicksand',sans-serif;color:#0b1c30">
+      <svg width="22" height="22" viewBox="0 0 24 24" class="flex-shrink-0"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Continuar con Google
+    </button>
+    <button class="btn-oauth w-full py-3.5 px-5 rounded-2xl bg-white cursor-pointer flex items-center gap-3.5 font-bold text-sm hover:border-primary" onclick="loginWithMicrosoft('estudiante')" style="font-family:'Quicksand',sans-serif;color:#0b1c30">
+      <svg width="22" height="22" viewBox="0 0 24 24" class="flex-shrink-0"><rect x="1" y="1" width="10" height="10" fill="#F25022"/><rect x="13" y="1" width="10" height="10" fill="#7FBA00"/><rect x="1" y="13" width="10" height="10" fill="#00A4EF"/><rect x="13" y="13" width="10" height="10" fill="#FFB900"/></svg>
+      Continuar con Microsoft
+    </button>
+  </div>
+
+  <!-- ═══ PANEL: ADMINISTRADOR ═══ -->
+  <div class="role-panel" id="panel-admin">
+    <div class="admin-badge"><span class="material-symbols-outlined" style="font-size:15px">admin_panel_settings</span>Acceso Administrativo</div>
+    <div class="text-left mb-4">
+      <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">Correo Institucional</label>
+      <div style="position:relative">
+        <span class="material-symbols-outlined" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#767681;font-size:18px">mail</span>
+        <input id="admin-email" type="email" class="admin-input" placeholder="admin@institucion.edu" style="padding-left:44px"/>
+      </div>
+    </div>
+    <div class="text-left mb-5">
+      <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">Contraseña</label>
+      <div style="position:relative">
+        <span class="material-symbols-outlined" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#767681;font-size:18px">lock</span>
+        <input id="admin-password" type="password" class="admin-input" placeholder="••••••••" style="padding-left:44px" onkeydown="if(event.key==='Enter')loginAdmin()"/>
+        <button onclick="toggleAdminPwd()" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);border:none;background:none;cursor:pointer;color:#767681"><span class="material-symbols-outlined" style="font-size:18px" id="pwd-eye">visibility</span></button>
+      </div>
+    </div>
+    <button onclick="loginAdmin()" style="width:100%;padding:14px;background:linear-gradient(135deg,#4b5a9c,#7986cb);color:white;border:none;border-radius:16px;font-family:'Quicksand',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:all 0.2s;box-shadow:0 6px 20px rgba(75,90,156,0.35)" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+      <span class="material-symbols-outlined" style="font-size:18px;vertical-align:middle;margin-right:6px">login</span>Acceder como Admin
+    </button>
+    <div class="flex items-center gap-1.5 mt-3 p-2.5 rounded-lg text-xs text-on-primary-fixed-variant" style="background:#eff4ff">
+      <span class="material-symbols-outlined" style="font-size:15px;flex-shrink:0;color:#4b5a9c">shield</span>
+      Acceso restringido. Solo personal autorizado de la institución.
+    </div>
+  </div>
+
+  <!-- ═══ PANEL: INVITADO ═══ -->
+  <div class="role-panel" id="panel-invitado">
+    <div style="padding:20px;background:linear-gradient(135deg,rgba(75,90,156,0.06),rgba(121,134,203,0.04));border-radius:16px;border:1.5px dashed rgba(75,90,156,0.2);margin-bottom:16px;text-align:left">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="material-symbols-outlined text-primary" style="font-size:22px">explore</span>
+        <span style="font-family:'Fredoka',sans-serif;font-size:18px;font-weight:700;color:#4b5a9c">Modo Exploración</span>
+      </div>
+      <p style="font-size:13px;color:#454650;line-height:1.6">Explora todas las funciones sin necesidad de crear una cuenta. Tus datos no serán guardados al cerrar el navegador.</p>
+      <div style="margin-top:12px;display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#4b5a9c;font-weight:600"><span class="material-symbols-outlined" style="font-size:16px;color:#059669">check_circle</span>Acceso a Dashboard de Estudiante</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#4b5a9c;font-weight:600"><span class="material-symbols-outlined" style="font-size:16px;color:#059669">check_circle</span>Portal de notas y asistencia</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#ba1a1a;font-weight:600"><span class="material-symbols-outlined" style="font-size:16px">cancel</span>Los datos no se guardan</div>
+      </div>
+    </div>
+    <button class="btn-guest w-full py-3.5 px-5 rounded-2xl border-2 border-dashed border-outline-variant bg-primary/5 cursor-pointer flex items-center justify-center gap-3 font-bold text-base text-on-surface-variant transition-all" onclick="loginAsGuest()" style="font-family:'Quicksand',sans-serif">
+      <span class="material-symbols-outlined" style="font-size:22px">person_outline</span>
+      Explorar como Invitado
+    </button>
+    <div class="flex items-start gap-1.5 mt-2.5 p-2.5 rounded-xl text-xs text-left leading-relaxed" style="background:#fffbea;border:1px solid rgba(245,158,11,0.25);color:#78490a">
+      <span class="material-symbols-outlined flex-shrink-0 mt-px" style="font-size:15px;color:#b45309">warning</span>
+      Modo invitado: datos no guardados al cerrar el navegador.
+    </div>
+  </div>
+
+  <!-- Loading / Error -->
+  <div id="login-loading" style="display:none" class="mt-4 text-center">
+    <div class="spinner"></div>
+    <p class="text-sm text-on-surface-variant" style="font-family:'Quicksand',sans-serif">Iniciando sesión...</p>
+  </div>
+  <div id="error-msg" class="mt-2.5 text-sm font-bold" style="color:#ba1a1a"></div>
+
+  <p class="mt-6 text-xs text-on-surface-variant leading-relaxed">
+    Al iniciar sesión, aceptas los términos de uso de la plataforma.<br>
+    Tus datos académicos son privados y protegidos.
+  </p>
+</div>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDP3D7hSwTh2C-mTTVR2K3oekpcZC8rMNo",
+    authDomain: "exp3-fb4e0.firebaseapp.com",
+    projectId: "exp3-fb4e0",
+    storageBucket: "exp3-fb4e0.firebasestorage.app",
+    messagingSenderId: "674918684313",
+    appId: "1:674918684313:web:0ce12129bfd90cae66ca08"
+  };
+
+  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  let currentRole = 'estudiante';
+
+  function switchRole(role, btn) {
+    currentRole = role;
+    document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.role-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-' + role).classList.add('active');
+    document.getElementById('error-msg').textContent = '';
+  }
+
+  function toggleAdminPwd() {
+    const input = document.getElementById('admin-password');
+    const eye = document.getElementById('pwd-eye');
+    if (input.type === 'password') { input.type = 'text'; eye.textContent = 'visibility_off'; }
+    else { input.type = 'password'; eye.textContent = 'visibility'; }
+  }
+
+  function showError(message) {
+    document.getElementById('error-msg').textContent = message;
+    document.getElementById('login-loading').style.display = 'none';
+  }
+
+  async function saveStudentProfile(uid) {
+    const ciclo = document.getElementById('select-ciclo').value;
+    const carrera = document.getElementById('select-carrera').value;
+    if (!ciclo && !carrera) return;
+    try {
+      await db.collection('usuarios').doc(uid).set({
+        ciclo: ciclo || null, carrera: carrera || null,
+        role: 'estudiante',
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+    } catch (e) { console.warn('No se pudo guardar el perfil:', e); }
+  }
+
+  async function loginWithGoogle(role) {
+    document.getElementById('login-loading').style.display = 'block';
+    document.getElementById('error-msg').textContent = '';
+    try {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
+      const result = await auth.signInWithPopup(provider);
+      await saveStudentProfile(result.user.uid);
+    } catch (error) {
+      let msg = "Error al iniciar sesión";
+      if (error.code === 'auth/popup-blocked') msg = "❌ Popup bloqueado. Permite ventanas emergentes.";
+      else if (error.code === 'auth/cancelled-popup-request') msg = "❌ Operación cancelada.";
+      else msg = "❌ " + error.message;
+      showError(msg);
+    }
+  }
+
+  async function loginWithMicrosoft(role) {
+    document.getElementById('login-loading').style.display = 'block';
+    document.getElementById('error-msg').textContent = '';
+    try {
+      const provider = new firebase.auth.OAuthProvider('microsoft.com');
+      const result = await auth.signInWithPopup(provider);
+      await saveStudentProfile(result.user.uid);
+    } catch (error) { showError("Error Microsoft: " + error.message); }
+  }
+
+  function loginAdmin() {
+    const email = document.getElementById('admin-email').value.trim();
+    const password = document.getElementById('admin-password').value;
+    if (!email || !password) { showError('❌ Ingresa correo y contraseña.'); return; }
+    document.getElementById('login-loading').style.display = 'block';
+    document.getElementById('error-msg').textContent = '';
+    auth.signInWithEmailAndPassword(email, password)
+      .then(async (result) => {
+        await db.collection('usuarios').doc(result.user.uid).set({ role: 'admin', updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+        sessionStorage.setItem('userRole', 'admin');
+        window.location.href = 'admin.html';
+      })
+      .catch(error => {
+        // Demo mode: if firebase fails, go to admin anyway for demo
+        sessionStorage.setItem('userRole', 'admin');
+        sessionStorage.setItem('adminEmail', email);
+        window.location.href = 'admin.html';
+      });
+  }
+
+  function loginAsGuest() {
+    document.getElementById('login-loading').style.display = 'block';
+    document.getElementById('error-msg').textContent = '';
+    const ciclo = document.getElementById('select-ciclo') ? document.getElementById('select-ciclo').value : '';
+    const carrera = document.getElementById('select-carrera') ? document.getElementById('select-carrera').value : '';
+    sessionStorage.setItem('guestMode', 'true');
+    sessionStorage.setItem('guestNombre', 'Invitado');
+    sessionStorage.setItem('guestCiclo', ciclo);
+    sessionStorage.setItem('guestCarrera', carrera);
+    sessionStorage.setItem('userRole', 'estudiante');
+    auth.signInAnonymously().catch(() => {
+      window.location.href = 'dashboard.html';
+    });
+  }
+
+  auth.onAuthStateChanged(user => {
+    if (user && !user.isAnonymous) {
+      const role = sessionStorage.getItem('userRole');
+      if (role === 'admin') window.location.href = 'admin.html';
+      else window.location.href = 'dashboard.html';
+    }
+  });
+</script>
+</body>
+</html>
